@@ -413,8 +413,10 @@ function formatTanggalIndo(tgl) {
                     <h4 class="font-bold text-sm text-slate-900">{{ mediaModalTitle }}</h4>
                     <button @click="showMediaModal = false" class="text-slate-400 hover:text-slate-700 font-bold text-base">✕</button>
                 </div>
-                <div class="p-4 bg-slate-950 flex items-center justify-center min-h-60 max-h-[70vh]">
-                    <img :src="mediaModalUrl" :alt="mediaModalTitle" class="max-h-[65vh] max-w-full object-contain rounded-lg" />
+                <div class="p-5 bg-slate-100 flex items-center justify-center min-h-60 max-h-[70vh]">
+                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200/80 max-w-full flex items-center justify-center">
+                        <img :src="mediaModalUrl" :alt="mediaModalTitle" class="max-h-[58vh] max-w-full object-contain rounded-lg" />
+                    </div>
                 </div>
                 <div class="p-3 bg-white text-right border-t border-slate-100">
                     <button
