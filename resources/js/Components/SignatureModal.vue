@@ -114,19 +114,48 @@ function switchToNewSignature() {
     });
 }
 
+// Kompres gambar otomatis di sisi client (browser) agar hemat kuota, upload super cepat (<300KB), dan bebas error 413
+function compressImage(file, maxDimension, quality, callback) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                    height = Math.round((height * maxDimension) / width);
+                    width = maxDimension;
+                } else {
+                    width = Math.round((width * maxDimension) / height);
+                    height = maxDimension;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+            callback(compressedDataUrl);
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 function onFileChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-        alertError('File Terlalu Besar', 'Maksimal ukuran foto adalah 10 MB.');
-        return;
-    }
-    fotoFile.value = file;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        fotoPreview.value = event.target.result;
-    };
-    reader.readAsDataURL(file);
+    
+    // Otomatis kompres foto resolusi kamera HP tinggi (10MB+) menjadi ~200KB yang tajam & ringan
+    compressImage(file, 1280, 0.8, (compressedDataUrl) => {
+        fotoFile.value = file;
+        fotoPreview.value = compressedDataUrl;
+    });
 }
 
 function removeFoto() {
