@@ -1,6 +1,6 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     lemburs: Array,
@@ -18,149 +18,227 @@ function cetakDokumen() {
     window.print();
 }
 
-function formatTanggal(tgl) {
+// Format tanggal dd/mm/yyyy sesuai lembar fisik (contoh: 04/09/2026)
+function formatTanggalFisik(tgl) {
     if (!tgl) return '';
     const d = new Date(tgl);
-    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
 }
+
+// Buat 36 baris (18 pasang kotak TTD) agar pas persis 1 halaman A4 Portrait seperti formulir fisik
+const MAX_BARIS = 36;
+const paddedLemburs = computed(() => {
+    const list = [...props.lemburs];
+    const sisa = MAX_BARIS - list.length;
+    for (let i = 0; i < sisa; i++) {
+        list.push({
+            id: 'empty-' + (list.length + 1),
+            user: { no_employe: '', name: '' },
+            keterangan: '',
+            jam_mulai: '',
+            jam_selesai: '',
+            keperluan: '',
+            tanda_tangan: null,
+            is_empty: true,
+        });
+    }
+    return list;
+});
 </script>
 
 <template>
-    <Head title="Cetak SPL" />
+    <Head title="Cetak Surat Perintah Kerja Lembur (SPL)" />
 
     <!-- Floating Action Toolbar (Hanya melayang di layar, 100% hilang saat dicetak) -->
-    <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-gray-900/90 backdrop-blur-md text-white px-4 py-2 rounded-full shadow-2xl border border-gray-700 text-sm">
-        <div class="flex items-center gap-2 pr-2 border-r border-gray-600">
-            <span class="text-xs text-gray-300">Tgl:</span>
+    <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 text-xs">
+        <div class="flex items-center gap-2 pr-2 border-r border-slate-700">
+            <span class="text-[11px] text-slate-300 font-semibold">Tgl:</span>
             <input
                 type="date"
                 v-model="selectedTanggal"
                 @change="filterTanggal"
-                class="bg-gray-800 text-white text-xs border border-gray-600 rounded px-2 py-1 focus:ring-1 focus:ring-blue-400"
+                class="bg-slate-800 text-white text-xs border border-slate-600 rounded px-2 py-1 focus:ring-1 focus:ring-emerald-400"
             />
         </div>
-        <a :href="route('dashboard')" class="text-gray-300 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition text-xs font-medium">
-            ← Kembali
+        <a :href="route('dashboard')" class="text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition font-medium">
+            ← Dashboard
+        </a>
+        <a :href="route('lembur.lrlk.print', { tanggal: selectedTanggal })" class="text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-slate-800 transition font-bold">
+            📊 Cetak LRLK
         </a>
         <button
             @click="cetakDokumen"
-            class="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold shadow transition flex items-center gap-1.5"
+            class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-full font-bold shadow transition flex items-center gap-1.5"
         >
-            <span>🖨️</span> Cetak Dokumen
+            <span>🖨️</span> Cetak SPL
         </button>
     </div>
 
-    <!-- Tampilan Murni Kertas Lembur -->
-    <div class="paper-wrapper min-h-screen bg-gray-100 py-6 px-4 print:p-0 print:m-0 print:bg-white flex justify-center">
-        <div class="print-area bg-white w-full max-w-[210mm] p-8 shadow-md print:shadow-none print:p-0 print:w-full print:max-w-none text-black box-border" style="font-family: 'Times New Roman', Times, serif;">
+    <!-- Tampilan Murni Kertas Lembur Sesuai Foto Fisik PROS-HCM-02 -->
+    <div class="paper-wrapper min-h-screen bg-slate-200 py-6 px-4 print:p-0 print:m-0 print:bg-white flex justify-center">
+        <div class="print-area bg-white w-full max-w-[210mm] p-6 shadow-xl print:shadow-none print:p-0 print:w-full print:max-w-none text-black box-border" style="font-family: Arial, Helvetica, sans-serif;">
 
-            <!-- Header & Nomor Form -->
-            <div class="relative mb-3">
-                <div class="text-center pt-2">
-                    <h1 class="text-base font-bold tracking-widest uppercase" style="letter-spacing: 2px;">
-                        SURAT PERINTAH KERJA LEMBUR
-                    </h1>
-                </div>
+            <!-- Header & Nomor Form PROS-HCM-02 -->
+            <div class="relative mb-2">
+                <!-- Kanan atas: Box PROS-HCM-02 -->
                 <div class="absolute right-0 top-0">
-                    <span class="border border-black px-2 py-0.5 text-xs font-semibold">
+                    <span class="border border-black px-2 py-0.5 text-[10px] font-bold tracking-wider">
                         PROS-HCM-02
                     </span>
                 </div>
+
+                <!-- Tengah: Judul SPL -->
+                <div class="text-center pt-1">
+                    <h1 class="text-sm font-bold tracking-wider uppercase">
+                        SURAT PERINTAH KERJA LEMBUR
+                    </h1>
+                </div>
+
+                <!-- Kiri: Info Perusahaan, Departemen, & Tanggal -->
+                <div class="text-[11px] leading-tight mt-1">
+                    <p class="font-bold text-xs mb-1">PT. LETAWA</p>
+                    <table class="text-[11px] leading-tight">
+                        <tr>
+                            <td class="pr-2 py-0.5 w-24">Departemen</td>
+                            <td class="pr-2 py-0.5">:</td>
+                            <td class="py-0.5 font-semibold">Pabrik</td>
+                        </tr>
+                        <tr>
+                            <td class="pr-2 py-0.5">Tanggal</td>
+                            <td class="pr-2 py-0.5">:</td>
+                            <td class="py-0.5 font-bold">{{ formatTanggalFisik(tanggal) }}</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
 
-            <!-- Info Perusahaan -->
-            <div class="mb-3 text-xs leading-tight">
-                <p class="font-bold mb-1">PT. __________________</p>
-                <table class="text-xs">
-                    <tr>
-                        <td class="pr-2 py-0.5">Divisi / Departemen</td>
-                        <td class="pr-2 py-0.5">:</td>
-                        <td class="py-0.5">__________________</td>
-                    </tr>
-                    <tr>
-                        <td class="pr-2 py-0.5">Tanggal</td>
-                        <td class="pr-2 py-0.5">:</td>
-                        <td class="py-0.5 font-medium">{{ formatTanggal(tanggal) }}</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- Tabel SPL -->
-            <table class="w-full border-collapse border border-black text-xs">
+            <!-- Tabel SPL Persis Foto Fisik (7 Kolom dengan Tanda Tangan 2 Sub-kolom) -->
+            <table class="w-full border-collapse border border-black text-[10px] leading-tight">
                 <thead>
-                    <tr class="bg-gray-50 print:bg-transparent">
-                        <th class="border border-black px-1.5 py-1 text-center w-8 text-[11px]">No</th>
-                        <th class="border border-black px-1.5 py-1 text-center w-24 text-[11px]">No. Employe</th>
-                        <th class="border border-black px-1.5 py-1 text-center text-[11px]">Nama Karyawan</th>
-                        <th class="border border-black px-1.5 py-1 text-center text-[11px]">Jenis Pekerjaan</th>
-                        <th class="border border-black px-1.5 py-1 text-center w-28 text-[11px]">Rencana Waktu Lembur</th>
-                        <th class="border border-black px-1.5 py-1 text-center text-[11px]">Keperluan</th>
-                        <th class="border border-black px-1.5 py-1 text-center w-16 text-[11px]">Status</th>
+                    <tr class="bg-gray-100 print:bg-transparent font-bold text-center">
+                        <th class="border border-black px-1 py-1 text-center w-7 text-[10px]">No</th>
+                        <th class="border border-black px-1 py-1 text-center w-20 text-[10px]">No_Employe</th>
+                        <th class="border border-black px-1.5 py-1 text-center w-36 text-[10px]">Nama Karyawan</th>
+                        <th class="border border-black px-1.5 py-1 text-center text-[10px]">Jenis Pekerjaan</th>
+                        <th class="border border-black px-1 py-1 text-center w-32 text-[9.5px]">Rencana Waktu Lembur</th>
+                        <th class="border border-black px-1 py-1 text-center w-16 text-[10px]">Keperluan</th>
+                        <th colspan="2" class="border border-black px-1 py-1 text-center w-28 text-[10px]">Tanda Tangan</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(lembur, index) in lemburs" :key="lembur.id" class="h-6">
-                        <td class="border border-black px-1 py-0.5 text-center text-[11px]">{{ index + 1 }}</td>
-                        <td class="border border-black px-1 py-0.5 text-center text-[11px]">{{ lembur.user?.no_employe || '-' }}</td>
-                        <td class="border border-black px-1.5 py-0.5 text-[11px] font-medium">{{ lembur.user?.name }}</td>
-                        <td class="border border-black px-1.5 py-0.5 text-[11px]">{{ lembur.keterangan }}</td>
-                        <td class="border border-black px-1 py-0.5 text-center text-[11px]">
-                            <span v-if="lembur.jam_mulai && lembur.jam_selesai">
-                                {{ lembur.jam_mulai?.slice(0,5) }} - {{ lembur.jam_selesai?.slice(0,5) }}
+                    <tr
+                        v-for="(lembur, index) in paddedLemburs"
+                        :key="lembur.id || index"
+                        class="h-[18px]"
+                    >
+                        <!-- No -->
+                        <td class="border border-black px-1 py-0 text-center text-[10px]">
+                            {{ index + 1 }}
+                        </td>
+
+                        <!-- No_Employe -->
+                        <td class="border border-black px-1 py-0 font-mono text-[9.5px] text-center">
+                            {{ lembur.user?.no_employe || '' }}
+                        </td>
+
+                        <!-- Nama Karyawan -->
+                        <td class="border border-black px-1.5 py-0 uppercase truncate max-w-[140px] font-semibold text-[10px]">
+                            {{ lembur.user?.name || '' }}
+                        </td>
+
+                        <!-- Jenis Pekerjaan -->
+                        <td class="border border-black px-1.5 py-0 text-[9px] truncate max-w-[130px]">
+                            <span v-if="lembur.keterangan">
+                                {{ lembur.keterangan }}<span v-if="lembur.keterangan_2 && lembur.keterangan_2 !== lembur.keterangan" class="text-black/75"> / {{ lembur.keterangan_2 }}</span>
                             </span>
-                            <span v-else class="text-gray-500">-</span>
                         </td>
-                        <td class="border border-black px-1.5 py-0.5 text-[11px]">{{ lembur.keperluan || '' }}</td>
-                        <td class="border border-black px-1 py-0.5 text-center text-[10px]">
-                            <span v-if="lembur.kategori === 'cuti' || lembur.keterangan === 'Cuti'" class="text-gray-700 font-bold">CUTI</span>
-                            <span v-else-if="lembur.kategori === 'hk' || lembur.keterangan === 'HK'" class="text-gray-700 font-bold">HK</span>
-                            <span v-else-if="lembur.kategori === 'izin'" class="text-purple-700 font-bold">IZIN</span>
-                            <span v-else-if="lembur.status === 'disetujui'" class="text-green-700 font-bold">ACC</span>
-                            <span v-else-if="lembur.status === 'ditolak'" class="text-red-700 font-bold">TOLAK</span>
-                            <span v-else class="text-yellow-700 font-semibold">PENDING</span>
+
+                        <!-- Rencana Waktu Lembur (Tetap 1 Baris: Sesi 1 | Sesi 2) -->
+                        <td class="border border-black px-1 py-0 text-center text-[8.5px] font-mono whitespace-nowrap">
+                            <span v-if="lembur.jam_mulai && lembur.jam_selesai">
+                                {{ lembur.jam_mulai?.slice(0,5) }} - {{ lembur.jam_selesai?.slice(0,5) }}<template v-if="lembur.jam_mulai_2 && lembur.jam_selesai_2"> | {{ lembur.jam_mulai_2?.slice(0,5) }} - {{ lembur.jam_selesai_2?.slice(0,5) }}</template>
+                            </span>
+                            <span v-else-if="lembur.is_empty"></span>
+                            <span v-else>-</span>
                         </td>
-                    </tr>
-                    <!-- Baris kosong agar format kertas penuh dan rapi (pas 1 halaman A4) -->
-                    <tr v-for="i in Math.max(0, 26 - lemburs.length)" :key="'empty-' + i" class="h-6">
-                        <td class="border border-black px-1 py-0.5 text-center text-[11px] text-gray-300">{{ lemburs.length + i }}</td>
-                        <td class="border border-black px-1 py-0.5 text-[11px]">&nbsp;</td>
-                        <td class="border border-black px-1.5 py-0.5 text-[11px]">&nbsp;</td>
-                        <td class="border border-black px-1.5 py-0.5 text-[11px]">&nbsp;</td>
-                        <td class="border border-black px-1 py-0.5 text-[11px]">&nbsp;</td>
-                        <td class="border border-black px-1.5 py-0.5 text-[11px]">&nbsp;</td>
-                        <td class="border border-black px-1 py-0.5 text-[11px]">&nbsp;</td>
+
+                        <!-- Keperluan -->
+                        <td class="border border-black px-1 py-0 text-[9.5px] text-center">
+                            {{ lembur.keperluan || '' }}
+                        </td>
+
+                        <!-- Tanda Tangan: 2 sub-kolom dengan rowspan="2" untuk setiap pasangan baris ganjil & genap -->
+                        <template v-if="index % 2 === 0">
+                            <!-- Kolom Kiri: untuk Karyawan Ganjil (No. 1, 3, 5, dst) -->
+                            <td
+                                rowspan="2"
+                                class="border border-black p-0 w-14 relative align-top text-left bg-white"
+                            >
+                                <div class="relative w-full h-[36px] flex items-center justify-center">
+                                    <span class="absolute top-0.5 left-1 text-[8.5px] font-bold text-black leading-none">
+                                        {{ index + 1 }}
+                                    </span>
+                                    <img
+                                        v-if="lembur.tanda_tangan"
+                                        :src="lembur.tanda_tangan"
+                                        alt="TTD"
+                                        class="max-h-[30px] max-w-[48px] object-contain"
+                                    />
+                                </div>
+                            </td>
+
+                            <!-- Kolom Kanan: untuk Karyawan Genap (No. 2, 4, 6, dst) -->
+                            <td
+                                rowspan="2"
+                                class="border border-black p-0 w-14 relative align-top text-left bg-white"
+                            >
+                                <div class="relative w-full h-[36px] flex items-center justify-center">
+                                    <span class="absolute top-0.5 left-1 text-[8.5px] font-bold text-black leading-none">
+                                        {{ index + 2 }}
+                                    </span>
+                                    <img
+                                        v-if="paddedLemburs[index + 1]?.tanda_tangan"
+                                        :src="paddedLemburs[index + 1].tanda_tangan"
+                                        alt="TTD"
+                                        class="max-h-[30px] max-w-[48px] object-contain"
+                                    />
+                                </div>
+                            </td>
+                        </template>
                     </tr>
                 </tbody>
             </table>
 
             <!-- Keterangan & Tempat TTD (Samping-sampingan di bawah tabel) -->
-            <div class="mt-3 flex justify-between items-start text-xs pb-6 print:pb-0">
+            <div class="mt-2.5 flex justify-between items-start text-xs pb-4 print:pb-0">
                 <!-- Keterangan di sebelah kiri -->
-                <div class="text-[11px] leading-relaxed text-gray-800">
-                    <p class="font-semibold text-black">Keterangan :</p>
+                <div class="text-[10px] leading-relaxed text-gray-800">
+                    <p class="font-bold text-black">Keterangan :</p>
                     <p>- Form ini harap diberikan ke HR Operation / HRGA</p>
                     <p>- Selambat-lambatnya 1 (satu) hari sebelum kerja lembur</p>
                     <p>- Tembusan ini untuk Dept. GA atau Security</p>
                 </div>
 
-                <!-- TTD di sebelah kanan di samping keterangan, ukuran kecil dan rapi -->
+                <!-- TTD di sebelah kanan di samping keterangan -->
                 <div>
-                    <table class="border-collapse border border-black text-center text-xs w-52">
+                    <table class="border-collapse border border-black text-center text-xs w-48">
                         <thead>
-                            <tr>
-                                <th class="border border-black px-2 py-0.5 font-normal text-[11px] w-26">Mengetahui</th>
-                                <th class="border border-black px-2 py-0.5 font-normal text-[11px] w-26">Dibuat</th>
+                            <tr class="bg-gray-50 print:bg-transparent font-bold">
+                                <th class="border border-black px-2 py-0.5 font-normal text-[10px] w-1/2">Mengetahui</th>
+                                <th class="border border-black px-2 py-0.5 font-normal text-[10px] w-1/2">Dibuat</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="border border-black h-12"></td>
-                                <td class="border border-black h-12"></td>
+                            <tr class="h-12">
+                                <td class="border border-black"></td>
+                                <td class="border border-black"></td>
                             </tr>
                             <tr>
-                                <td class="border border-black px-1 py-0.5 text-[10px]">Askep</td>
-                                <td class="border border-black px-1 py-0.5 text-[10px]">Asisten</td>
+                                <td class="border border-black px-1 py-0.5 text-[9.5px]">Askep</td>
+                                <td class="border border-black px-1 py-0.5 text-[9.5px]">Asisten</td>
                             </tr>
                         </tbody>
                     </table>
@@ -171,7 +249,7 @@ function formatTanggal(tgl) {
     </div>
 </template>
 
-<style>
+<style scoped>
 @media print {
     /* Sembunyikan elemen non-cetak */
     .no-print,
@@ -209,7 +287,7 @@ function formatTanggal(tgl) {
     /* Pengaturan kertas A4 Portrait */
     @page {
         size: A4 portrait;
-        margin: 8mm 10mm;
+        margin: 8mm 8mm 6mm 8mm;
     }
 
     tr {

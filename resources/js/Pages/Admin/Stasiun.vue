@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { confirmDialog } from '@/utils/swal';
 
 const props = defineProps({
     stasions: Array,
@@ -45,10 +46,14 @@ function submit() {
     }
 }
 
-function hapus(id) {
-    if (confirm('Yakin ingin menghapus stasiun ini?')) {
-        router.delete(route('admin.stasiun.destroy', id));
-    }
+async function hapus(id) {
+    const ok = await confirmDialog({
+        title: 'Hapus stasiun ini?',
+        text: 'Data stasiun yang dihapus tidak dapat dikembalikan.',
+        confirmText: 'Ya, hapus',
+        danger: true,
+    });
+    if (ok) router.delete(route('admin.stasiun.destroy', id));
 }
 </script>
 

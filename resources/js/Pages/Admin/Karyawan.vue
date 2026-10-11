@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { confirmDialog } from '@/utils/swal';
 
 const props = defineProps({
     karyawanList: Array,
@@ -26,6 +27,46 @@ const form = useForm({
     stasiun_id: '',
     shift: 1,
     mandor_id: '',
+    gaji_pokok: '',
+    status_pernikahan: 'TK',
+    jatah_beras_kg: 15,
+    harga_beras_per_kg: 14000,
+    tarif_lembur_per_jam: '',
+});
+
+// Pilihan status pernikahan & jatah beras standar PT Letawa / perkebunan sawit
+const statusPernikahanOptions = [
+    { value: 'TK', label: 'TK - Tidak Kawin / Sendiri (15 Kg)', kg: 15 },
+    { value: 'K/0', label: 'K/0 - Kawin tanpa anak (24 Kg: 15kg + 9kg)', kg: 24 },
+    { value: 'K/1', label: 'K/1 - Kawin + 1 anak (31.5 Kg: 15kg + 9kg + 7.5kg)', kg: 31.5 },
+    { value: 'K/2', label: 'K/2 - Kawin + 2 anak (39 Kg: 15kg + 9kg + 15kg)', kg: 39 },
+    { value: 'K/3', label: 'K/3 - Kawin + 3 anak (46.5 Kg: 15kg + 9kg + 22.5kg)', kg: 46.5 },
+    { value: 'custom', label: 'Kustom - Input Kg Beras Bebas', kg: null },
+];
+
+function onStatusPernikahanChange() {
+    const matched = statusPernikahanOptions.find(o => o.value === form.status_pernikahan);
+    if (matched && matched.kg !== null) {
+        form.jatah_beras_kg = matched.kg;
+    }
+}
+
+const computedTunjanganBeras = computed(() => {
+    const kg = Number(form.jatah_beras_kg) || 0;
+    const harga = Number(form.harga_beras_per_kg) || 0;
+    return Math.round(kg * harga);
+});
+
+const computedTotalDasarUpah = computed(() => {
+    const gaji = Number(form.gaji_pokok) || 0;
+    return gaji + computedTunjanganBeras.value;
+});
+
+const computedUpahSejam = computed(() => {
+    if (form.tarif_lembur_per_jam && Number(form.tarif_lembur_per_jam) > 0) {
+        return Number(form.tarif_lembur_per_jam);
+    }
+    return computedTotalDasarUpah.value > 0 ? Math.round(computedTotalDasarUpah.value / 173) : 0;
 });
 
 // Hitung jumlah karyawan per shift
@@ -73,6 +114,9 @@ function openCreate() {
     editMode.value = false;
     editId.value = null;
     form.reset();
+    form.status_pernikahan = 'TK';
+    form.jatah_beras_kg = 15;
+    form.harga_beras_per_kg = 14000;
     form.clearErrors();
 
     // Set default shift sesuai tab yang sedang dibuka
@@ -99,6 +143,11 @@ function openEdit(karyawan) {
     form.stasiun_id = karyawan.stasiun_id || '';
     form.shift = karyawan.shift || '';
     form.mandor_id = karyawan.mandor_id || '';
+    form.gaji_pokok = karyawan.gaji_pokok || '';
+    form.status_pernikahan = karyawan.status_pernikahan || 'TK';
+    form.jatah_beras_kg = (karyawan.jatah_beras_kg !== null && karyawan.jatah_beras_kg !== undefined) ? karyawan.jatah_beras_kg : 15;
+    form.harga_beras_per_kg = (karyawan.harga_beras_per_kg !== null && karyawan.harga_beras_per_kg !== undefined) ? karyawan.harga_beras_per_kg : 14000;
+    form.tarif_lembur_per_jam = karyawan.tarif_lembur_per_jam || '';
     form.clearErrors();
     showModal.value = true;
 }
@@ -125,10 +174,14 @@ function submit() {
     }
 }
 
-function hapus(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus user ini?')) {
-        router.delete(route('admin.karyawan.destroy', id));
-    }
+async function hapus(id) {
+    const ok = await confirmDialog({
+        title: 'Hapus user ini?',
+        text: 'Akun beserta aksesnya akan dihapus permanen.',
+        confirmText: 'Ya, hapus',
+        danger: true,
+    });
+    if (ok) router.delete(route('admin.karyawan.destroy', id));
 }
 
 function roleBadgeClass(role) {
@@ -270,6 +323,7 @@ function roleBadgeClass(role) {
                                     <th class="px-3 py-3 text-left">Nama</th>
                                     <th class="px-3 py-3 text-left">Email</th>
                                     <th class="px-3 py-3 text-left">Stasiun Pabrik</th>
+                                    <th class="px-3 py-3 text-left w-36">Upah Lembur</th>
                                     <th class="px-3 py-3 text-left w-44">Pilih Shift (Langsung)</th>
                                     <th class="px-3 py-3 text-left">Mandor</th>
                                     <th class="px-3 py-3 text-center w-28">Aksi</th>
@@ -293,6 +347,22 @@ function roleBadgeClass(role) {
                                             {{ k.stasiun.nama }}
                                         </span>
                                         <span v-else class="text-gray-400 italic">- Belum diatur -</span>
+                                    </td>
+
+                                    <!-- Upah & Tarif Lembur -->
+                                    <td class="px-3 py-2.5">
+                                        <div v-if="k.gaji_pokok || k.tarif_lembur_per_jam">
+                                            <div class="font-bold text-slate-900 text-[11px]">
+                                                Rp {{ Math.round(k.upah_sejam || 0).toLocaleString('id-ID') }}/jam
+                                            </div>
+                                            <div class="text-[10px] text-slate-500">
+                                                Gaji: Rp {{ Number(k.gaji_pokok || 0).toLocaleString('id-ID') }}
+                                            </div>
+                                            <div class="text-[9px] text-emerald-700 font-medium">
+                                                Beras: {{ k.status_pernikahan || 'TK' }} ({{ k.jatah_beras_kg || 15 }}kg)
+                                            </div>
+                                        </div>
+                                        <span v-else class="text-slate-400 italic text-[11px]">- Belum diset -</span>
                                     </td>
 
                                     <!-- Pilih Shift Langsung Dari Tabel -->
@@ -345,7 +415,7 @@ function roleBadgeClass(role) {
                                     </td>
                                 </tr>
                                 <tr v-if="filteredList.length === 0">
-                                    <td colspan="8" class="px-4 py-8 text-center text-sm text-gray-500">
+                                    <td colspan="9" class="px-4 py-8 text-center text-sm text-gray-500">
                                         Tidak ada karyawan ditemukan di kategori ini.
                                     </td>
                                 </tr>
@@ -474,6 +544,102 @@ function roleBadgeClass(role) {
                         <p class="text-[10px] text-gray-500 italic">
                             * Memilih Shift 1 akan otomatis menetapkan Mandor A, dan Shift 2 akan otomatis menetapkan Mandor B.
                         </p>
+                    </div>
+
+                    <!-- Variabel Upah Lembur Karyawan (PT Letawa & PP 35/2021) -->
+                    <div class="bg-emerald-50/70 border border-emerald-200 p-3.5 rounded-xl space-y-3">
+                        <div class="font-bold text-emerald-950 text-xs flex items-center justify-between">
+                            <span class="flex items-center gap-1.5">🌾 Komponen Upah & Catu Beras (PT Letawa)</span>
+                            <span class="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded font-bold">PP 35/2021</span>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Gaji Pokok / Sebulan (Rp)</label>
+                            <input
+                                type="number"
+                                v-model="form.gaji_pokok"
+                                class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600 text-xs font-semibold"
+                                placeholder="Contoh: 3500000"
+                                min="0"
+                            />
+                        </div>
+
+                        <!-- Status Pernikahan & Catu Beras Standar PT Letawa -->
+                        <div class="bg-white p-3 rounded-lg border border-emerald-100 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-bold text-emerald-900">Jatah Catu Beras Karyawan</span>
+                                <span class="text-[10px] text-emerald-600 italic">* Standar perkebunan kelapa sawit</span>
+                            </div>
+
+                            <div>
+                                <label class="block font-medium text-slate-700 mb-1">Status Pernikahan / Tanggungan</label>
+                                <select
+                                    v-model="form.status_pernikahan"
+                                    @change="onStatusPernikahanChange"
+                                    class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600 text-xs font-semibold"
+                                >
+                                    <option v-for="opt in statusPernikahanOptions" :key="opt.value" :value="opt.value">
+                                        {{ opt.label }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-medium text-slate-700 mb-1">Jatah Beras (Kg)</label>
+                                    <input
+                                        type="number"
+                                        step="0.5"
+                                        v-model="form.jatah_beras_kg"
+                                        class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600 text-xs font-semibold"
+                                        placeholder="15"
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block font-medium text-slate-700 mb-1">Harga Beras per Kg (Rp)</label>
+                                    <input
+                                        type="number"
+                                        v-model="form.harga_beras_per_kg"
+                                        class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600 text-xs font-semibold"
+                                        placeholder="14000"
+                                        min="0"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded flex items-center justify-between">
+                                <span>Nilai Tunjangan Catu Beras:</span>
+                                <span class="font-bold text-emerald-800">
+                                    {{ form.jatah_beras_kg || 0 }} kg × Rp {{ Number(form.harga_beras_per_kg || 0).toLocaleString('id-ID') }} = Rp {{ computedTunjanganBeras.toLocaleString('id-ID') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Tarif Kustom / Jam (Opsional)</label>
+                            <input
+                                type="number"
+                                v-model="form.tarif_lembur_per_jam"
+                                class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-600 focus:ring-emerald-600 text-xs font-semibold"
+                                placeholder="Kosongkan jika pakai rumus: (Gaji Pokok + Beras) / 173"
+                                min="0"
+                            />
+                        </div>
+
+                        <!-- Live Preview Perhitungan Lembur -->
+                        <div class="text-[11px] text-emerald-950 bg-white/90 p-3 rounded-xl border border-emerald-200 space-y-1.5">
+                            <div class="flex items-center justify-between text-slate-600">
+                                <span>Total Dasar Upah (Gaji + Beras):</span>
+                                <span class="font-semibold text-slate-800">Rp {{ computedTotalDasarUpah.toLocaleString('id-ID') }}</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-1 border-t border-emerald-100">
+                                <span class="font-bold text-emerald-900">Upah Sejam Lembur (÷ 173):</span>
+                                <strong class="text-emerald-800 text-sm">
+                                    Rp {{ computedUpahSejam.toLocaleString('id-ID') }} / jam
+                                </strong>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-3 border-t">

@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        if (str_contains(config('app.url'), 'https://')) {
+        if (app()->environment('production') || (str_contains(config('app.url'), 'https://') && !app()->isLocal())) {
             URL::forceScheme('https');
         }
     }

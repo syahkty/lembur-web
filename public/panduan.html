@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOP & Alur Kerja SILEKA - PT. Letawa</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0D6E55;
+            --primary-dark: #084c3a;
+            --primary-light: #e8f5f1;
+            --primary-border: #a7f3d0;
+            --secondary: #1a56db;
+            --secondary-light: #eff6ff;
+            --amber: #d97706;
+            --amber-light: #fef3c7;
+            --slate-dark: #0f172a;
+            --slate-800: #1e293b;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 24px -4px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+            background-color: var(--slate-50);
+            color: var(--slate-800);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Top Sticky Navigation Bar */
+        .top-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--slate-200);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo-badge {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), #10b981);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: 0 4px 10px rgba(13, 110, 85, 0.25);
+        }
+
+        .brand-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--slate-dark);
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-outline {
+            background: white;
+            border-color: var(--slate-200);
+            color: var(--slate-800);
+        }
+
+        .btn-outline:hover {
+            background: var(--slate-100);
+            border-color: var(--slate-500);
+        }
+
+        .btn-docx {
+            background: #0078d4;
+            color: white;
+        }
+
+        .btn-docx:hover {
+            background: #005a9e;
+            box-shadow: 0 4px 12px rgba(0, 120, 212, 0.25);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(13, 110, 85, 0.25);
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 32px 20px 80px 20px;
+        }
+
+        /* Hero Header Section */
+        .hero-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f1f8f5 100%);
+            border: 1px solid var(--primary-border);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-green {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid var(--primary-border);
+        }
+
+        .badge-slate {
+            background: var(--slate-100);
+            color: var(--slate-600);
+            border: 1px solid var(--slate-200);
+        }
+
+        .hero-title {
+            font-size: 27px;
+            font-weight: 800;
+            color: var(--slate-dark);
+            line-height: 1.25;
+            margin-bottom: 12px;
+        }
+
+        .hero-desc {
+            font-size: 15px;
+            color: var(--slate-600);
+            max-width: 860px;
+            line-height: 1.65;
+            margin-bottom: 24px;
+        }
+
+        /* 4 Permasalahan Utama Grid */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+        }
+
+        .problem-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid #fed7aa;
+            border-left: 4px solid var(--red);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .problem-header {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #991b1b;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .problem-desc {
+            font-size: 12px;
+            color: var(--slate-600);
+            line-height: 1.5;
+        }
+
+        /* Section Styling */
+        .section-header {
+            margin: 40px 0 18px 0;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 2px solid var(--slate-200);
+            padding-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--slate-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 5px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: var(--slate-500);
+        }
+
+        /* Callout Box - Shift & Rotasi */
+        .callout-box {
+            background: white;
+            border: 1px solid var(--primary-border);
+            border-left: 5px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .callout-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .callout-content {
+            font-size: 13.5px;
+            color: var(--slate-800);
+            line-height: 1.6;
+        }
+
+        .callout-content ul {
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+
+        .callout-content li {
+            margin-bottom: 4px;
+        }
+
+        /* Comparison Table */
+        .comp-table-container {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--slate-200);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+        }
+
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .comp-table th {
+            background: var(--slate-800);
+            color: white;
+            padding: 14px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comp-table td {
+            padding: 14px 18px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--slate-200);
+            vertical-align: top;
+        }
+
+        .comp-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comp-table tr:nth-child(even) td {
+            background: #fafbfc;
+        }
+
+        .tag-bad {
+            color: var(--red);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .tag-good {
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        /* 3 Actors Grid */
+        .actors-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .actors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .actor-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--slate-200);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .actor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .actor-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--slate-100);
+        }
+
+        .actor-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .avatar-mandor { background: #e0f2fe; color: #0284c7; }
+        .avatar-karyawan { background: #dcfce7; color: #16a34a; }
+        .avatar-admin { background: #fef3c7; color: #d97706; }
+
+        .actor-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--slate-dark);
+            line-height: 1.2;
+        }
+
+        .actor-role-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate-500);
+            margin-top: 2px;
+        }
+
+        .actor-summary {
+            font-size: 12.5px;
+            color: var(--slate-600);
+            margin-bottom: 16px;
+            line-height: 1.5;
+            background: var(--slate-50);
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--primary);
+        }
+
+        .task-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12.5px;
+            color: var(--slate-800);
+            line-height: 1.45;
+        }
+
+        .task-num {
+            width: 18px;
+            height: 18px;
+            background: var(--slate-100);
+            color: var(--slate-600);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .actor-footer {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px dashed var(--slate-200);
+            font-size: 11px;
+            color: var(--slate-500);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Workflow Steps Pipeline */
+        .pipeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .pipeline-step {
+            background: white;
+            border: 1px solid var(--slate-200);
+            border-radius: var(--radius-md);
+            padding: 22px 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .step-badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .step-badge-cadangan {
+            background: #475569;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .step-actor-tag {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--slate-600);
+            background: var(--slate-100);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--slate-dark);
+            margin-bottom: 6px;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: var(--slate-600);
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 8px;
+            background: var(--slate-50);
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--slate-200);
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 12.5px;
+            color: var(--slate-800);
+        }
+
+        .check-icon {
+            color: var(--primary);
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* RACI Table */
+        .raci-table-container {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--slate-200);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+        }
+
+        .raci-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .raci-table th {
+            background: var(--slate-800);
+            color: white;
+            padding: 12px 14px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .raci-table th.th-activity {
+            text-align: left;
+            width: 48%;
+        }
+
+        .raci-table td {
+            padding: 12px 14px;
+            font-size: 12.5px;
+            border-bottom: 1px solid var(--slate-200);
+        }
+
+        .raci-table td.td-activity {
+            text-align: left;
+            font-weight: 600;
+            color: var(--slate-dark);
+        }
+
+        .raci-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .raci-r { background: #dcfce7; color: #15803d; } /* Responsible */
+        .raci-a { background: #fee2e2; color: #b91c1c; } /* Accountable */
+        .raci-c { background: #fef3c7; color: #b45309; } /* Consulted */
+        .raci-i { background: #f1f5f9; color: #64748b; } /* Informed */
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            border-top: 1px solid var(--slate-200);
+            padding-top: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--slate-500);
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+                font-size: 11pt;
+            }
+            .top-navbar, .nav-actions, .btn {
+                display: none !important;
+            }
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            .hero-card, .problem-card, .actor-card, .pipeline-step {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                page-break-inside: avoid;
+            }
+            .actors-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sticky Top Navigation -->
+    <header class="top-navbar">
+        <div class="brand-container">
+            <div class="brand-logo-badge">SL</div>
+            <div>
+                <div class="brand-title">SILEKA — PANDUAN RESMI</div>
+                <div class="brand-subtitle">Pabrik Kelapa Sawit PT. Letawa | Format PROS-HCM-02</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <a href="SOP_DAN_ALUR_SISTEM_SILEKA.docx" download class="btn btn-docx">
+                <span>📄</span> Unduh File Word (.docx)
+            </a>
+            <button onclick="window.print()" class="btn btn-outline">
+                <span>🖨️</span> Cetak / Simpan PDF
+            </button>
+            <a href="/login" class="btn btn-primary">
+                <span>🚀</span> Buka Aplikasi SILEKA
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Hero Card -->
+        <section class="hero-card">
+            <div class="hero-badge-row">
+                <span class="badge badge-green">Dokumen Resmi SOP-HCM-2026</span>
+                <span class="badge badge-slate">Format Fisik: PROS-HCM-02</span>
+                <span class="badge badge-slate">3 Aktor Utama: Mandor, Karyawan, Admin</span>
+            </div>
+            <h1 class="hero-title">Panduan Operasional & Alur Sistem Lembur (SILEKA)</h1>
+            <p class="hero-desc">
+                Dokumentasi terpadu standar operasional Surat Perintah Lembur (SPL) digital di Pabrik Kelapa Sawit PT. Letawa. 
+                Pada format dokumen konvensional sebelumnya, nama dan nomor employee karyawan memang sudah tercetak di blangko, 
+                namun Mandor tetap harus menulis tangan jam dan jenis pekerjaan satu per satu setiap hari, lalu Admin mengetik ulang ke Excel. 
+                SILEKA mentransformasi alur ini menjadi sistem digital otomatis yang efisien, hemat biaya kertas, dan bebas salah hitung.
+            </p>
+
+            <!-- 4 Masalah Utama Kertas -->
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-header">✕ Pencatatan Berbasis Kertas</div>
+                    <div class="problem-desc">Data lembur (SPL) masih ditulis manual di kertas, sehingga rawan rusak, basah/terkena minyak pabrik, hilang, atau memiliki tulisan tangan yang sulit dibaca saat hendak direkap.</div>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-header">✕ Beban Rekapitulasi Harian</div>
+                    <div class="problem-desc">Setiap pagi, kertas laporan disetorkan oleh Mandor dan Admin harus mengetik ulang seluruh data fisik tersebut ke file Excel secara manual satu per satu.</div>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-header">✕ Pemborosan Biaya & Ruang Arsip</div>
+                    <div class="problem-desc">Pencetakan blangko SPL setiap hari memakan banyak biaya kertas & tinta, menghasilkan penumpukan limbah dokumen, serta menghabiskan ruang lemari arsip.</div>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-header">✕ Pencarian Arsip Data Sulit</div>
+                    <div class="problem-desc">Jika terjadi komplain atau selisih perhitungan gaji, Admin kesulitan melacak riwayat lembur karyawan karena harus membongkar tumpukan berkas arsip kertas fisik.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 1: Konvensional vs SILEKA -->
+        <section>
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Perbandingan Sistem Konvensional vs SILEKA</h2>
+                    <div class="section-subtitle">Perubahan mendasar operasional pencatatan lembur di pabrik</div>
+                </div>
+            </div>
+
+            <div class="comp-table-container">
+                <table class="comp-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 22%;">Aspek Pengelolaan</th>
+                            <th style="width: 39%;">Sistem Konvensional (Kertas Fisik)</th>
+                            <th style="width: 39%;">Sistem Digital (SILEKA)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Pengisian Jam & Tugas</strong></td>
+                            <td>
+                                <div class="tag-bad">✕ Tulis Manual Tiap Baris</div>
+                                Walaupun nama dan ID sudah tercetak di blangko, Mandor tetap harus menulis tangan jam mulai, jam selesai, dan jenis tugas pada 20–35 baris karyawan setiap hari.
+                            </td>
+                            <td>
+                                <div class="tag-good">✓ Preset Jam Cepat 1 Klik</div>
+                                Mandor cukup menggunakan bar Preset Jam untuk mengisi jam mulai dan selesai serentak ke seluruh regu dalam 1 detik, lalu menyesuaikan jenis tugas dan jam yang berbeda.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rekapitulasi Harian Admin</strong></td>
+                            <td>
+                                <div class="tag-bad">✕ Mengetik Ulang ke Excel</div>
+                                Setiap pagi lembaran kertas disetor ke kantor; Admin harus meluangkan waktu mengetik ulang seluruh data fisik tersebut ke file Excel satu per satu.
+                            </td>
+                            <td>
+                                <div class="tag-good">✓ Otomatis Tersimpan di Sistem</div>
+                                Begitu Mandor klik 'Simpan', seluruh data otomatis terekam rapi di sistem. Admin tidak perlu lagi mengetik ulang ke Excel setiap pagi.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Biaya Kertas & Ruang Arsip</strong></td>
+                            <td>
+                                <div class="tag-bad">✕ Boros Kertas & Limbah Menumpuk</div>
+                                Pencetakan blangko kertas setiap hari menghabiskan biaya operasional dan lembaran fisik menumpuk di lemari arsip berdebu.
+                            </td>
+                            <td>
+                                <div class="tag-good">✓ 100% Paperless di Database</div>
+                                Semua data tersimpan aman di database cloud.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Penelusuran Komplain & Riwayat</strong></td>
+                            <td>
+                                <div class="tag-bad">✕ Bongkar Tumpukan Arsip Kertas</div>
+                                Jika ada komplain selisih perhitungan lembur, Admin harus membongkar tumpukan map kertas berbulan-bulan ke belakang.
+                            </td>
+                            <td>
+                                <div class="tag-good">✓ Pencarian Instan Hitungan Detik</div>
+                                Admin dan karyawan dapat langsung memfilter tanggal dan riwayat lembur secara real-time di aplikasi tanpa repot mencari dokumen fisik.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 2: Peta 3 Aktor Utama -->
+        <section>
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Peta 3 Aktor Utama & Rincian Tugas</h2>
+                    <div class="section-subtitle">Struktur peran yang terlibat langsung dalam pencatatan lembur pabrik</div>
+                </div>
+            </div>
+
+            <div class="actors-grid">
+                
+                <!-- Mandor -->
+                <div class="actor-card">
+                    <div class="actor-header">
+                        <div class="actor-avatar avatar-mandor">👷‍♂️</div>
+                        <div>
+                            <div class="actor-name">Mandor / Pengawas</div>
+                            <div class="actor-role-title">Shift Supervisor (Mandor A & B)</div>
+                        </div>
+                    </div>
+                    <div class="actor-summary">
+                        Pengawas regu shift operasional di lapangan pabrik. Mengkoordinasikan jam kerja lembur anggota regunya.
+                    </div>
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <span class="task-num">1</span>
+                            <div><strong>Buat SPL Regu:</strong> Membuka menu Buat SPL dan memilih tanggal. Sistem otomatis memuat anggota regu shift-nya.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">2</span>
+                            <div><strong>Preset Jam Massal:</strong> Memasukkan jam mulai dan selesai serentak ke seluruh karyawan hanya dengan 1 kali klik.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">3</span>
+                            <div><strong>Atur Status Lembur:</strong> Mengubah status ke 'Tidak Lembur' bagi yang absen/izin/sakit dan menulis keterangannya pada kolom Jenis Pekerjaan.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">4</span>
+                            <div><strong>Simpan Data Digital:</strong> Menyimpan SPL harian ke server sehingga otomatis terbaca oleh karyawan dan admin.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">5</span>
+                            <div><strong>Opsi Cetak PROS-HCM-02:</strong> Tetap dapat mencetak formulir A4 jika diperlukan.</div>
+                        </li>
+                    </ul>
+                    <div class="actor-footer">
+                        <span>Akses: Buat SPL, Kelola SPL, Cetak SPL</span>
+                        <span class="badge badge-green">Shift Leader</span>
+                    </div>
+                </div>
+
+                <!-- Karyawan -->
+                <div class="actor-card">
+                    <div class="actor-header">
+                        <div class="actor-avatar avatar-karyawan">👨‍🔧</div>
+                        <div>
+                            <div class="actor-name">Karyawan Pelaksana</div>
+                            <div class="actor-role-title">Mill Operator (Stasiun Pabrik)</div>
+                        </div>
+                    </div>
+                    <div class="actor-summary">
+                        Operator pelaksana teknis di stasiun kerja pabrik. Memiliki akses mandiri di HP untuk validasi lembur.
+                    </div>
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <span class="task-num">1</span>
+                            <div><strong>Akses Mandiri di HP:</strong> Membuka aplikasi SILEKA dari browser smartphone pribadi setelah selesai jam kerja.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">2</span>
+                            <div><strong>Periksa Jam Kerja:</strong> Meninjau jam mulai, jam selesai, dan rincian tugas yang diinput mandor pada dashboard pribadinya.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">3</span>
+                            <div><strong>Klik ACC (Validasi Digital):</strong> Mengonfirmasi keabsahan jam lembur dengan satu ketukan tombol 'ACC' (status sah menjadi Disetujui).</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">4</span>
+                            <div><strong>Klik Tolak (Jika Selisih):</strong> Menolak dan mencantumkan catatan perbaikan jika jam yang diajukan tidak sesuai di lapangan.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">5</span>
+                            <div><strong>Pantau Riwayat Lembur:</strong> Memantau akumulasi total jam lembur yang telah sah dalam bulan berjalan secara transparan.</div>
+                        </li>
+                    </ul>
+                    <div class="actor-footer">
+                        <span>Akses: Dashboard Pribadi & Riwayat</span>
+                        <span class="badge badge-green">Self-Service</span>
+                    </div>
+                </div>
+
+                <!-- Admin -->
+                <div class="actor-card">
+                    <div class="actor-header">
+                        <div class="actor-avatar avatar-admin">🏢</div>
+                        <div>
+                            <div class="actor-name">Admin</div>
+                            <div class="actor-role-title">Administrasi</div>
+                        </div>
+                    </div>
+                    <div class="actor-summary">
+                        Pengelola data induk operasional dan pemantau rekapitulasi data lembur pabrik secara otomatis.
+                    </div>
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <span class="task-num">1</span>
+                            <div><strong>Master Karyawan & Shift:</strong> Mengelola nomor employee, penempatan stasiun kerja permanen, dan regu shift (Shift 1 atau 2).</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">2</span>
+                            <div><strong>Bebas Ketik Ulang Excel:</strong> Setiap pagi seluruh data lembur harian dari mandor sudah otomatis tersaji rapi di dashboard.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">3</span>
+                            <div><strong>Penelusuran Riwayat Cepat:</strong> Melacak data lembur historis dalam hitungan detik saat ada pertanyaan atau audit.</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">4</span>
+                            <div><strong>Manajemen Stasiun Pabrik:</strong> Memelihara master stasiun pabrik (Loading Ramp, Sterilizer, Press, Boiler, dll).</div>
+                        </li>
+                        <li class="task-item">
+                            <span class="task-num">5</span>
+                            <div><strong>Ekspor Rekapitulasi:</strong> Mengunduh laporan rekap jam lembur yang valid untuk perhitungan penggajian akhir bulan.</div>
+                        </li>
+                    </ul>
+                    <div class="actor-footer">
+                        <span>Akses: Master Karyawan, Stasiun, Rekapitulasi</span>
+                        <span class="badge badge-slate">Full Control</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 3: Alur Kerja Harian -->
+        <section>
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Alur Kerja Operasional Harian (Workflow)</h2>
+                    <div class="section-subtitle">Proses dari pembuatan instruksi hingga rekapitulasi penggajian</div>
+                </div>
+            </div>
+
+            <div class="pipeline-container">
+                
+                <!-- Tahap 1 -->
+                <div class="pipeline-step">
+                    <div class="step-top-row">
+                        <span class="step-badge">Tahap 1 — Input SPL Harian</span>
+                        <span class="step-actor-tag">Pelaksana: Mandor Lapangan</span>
+                    </div>
+                    <h3 class="step-title">Pengisian Jam Lembur Kolektif Berbasis Shift</h3>
+                    <p class="step-desc">
+                        Mandor login ke sistem SILEKA, membuka menu <strong>Buat SPL</strong>, dan memilih tanggal operasional. 
+                        Sistem langsung memuat seluruh anggota regu shift mandor tersebut secara otomatis . 
+                        Mandor menggunakan fitur Preset Bar untuk mengisi jam mulai & selesai secara serentak ke seluruh regu dalam 1 klik, lalu mengisi rincian tugas. 
+                        Bagi karyawan yang tidak lembur (izin/cuti/sakit/HK), toggle diubah ke 'Tidak Lembur' dan keterangannya diisi pada Jenis Pekerjaan. Klik 'Simpan Semua Data Lembur'.
+                    </p>
+                    <div class="checklist-grid">
+                        <div class="check-item"><span class="check-icon">✓</span> Pilih tanggal operasional lembur</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Anggota regu shift otomatis muncul di tabel</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Preset Jam massal mengisi serentak 1 klik</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Keterangan alasan bagi yang Tidak Lembur</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Simpan data langsung terekam ke cloud</div>
+                    </div>
+                </div>
+
+                <!-- Tahap 2 -->
+                <div class="pipeline-step">
+                    <div class="step-top-row">
+                        <span class="step-badge">Tahap 2 — Validasi Mandiri di HP</span>
+                        <span class="step-actor-tag">Pelaksana: Karyawan Pelaksana</span>
+                    </div>
+                    <h3 class="step-title">Pemeriksaan & Persetujuan Digital (ACC) oleh Karyawan</h3>
+                    <p class="step-desc">
+                        Setelah selesai jam kerja, karyawan membuka aplikasi SILEKA dari browser smartphone masing-masing. 
+                        Di dashboard pribadi, karyawan melihat data rencana lembur yang telah dibuatkan mandor untuk dirinya (jam mulai, jam selesai, jenis tugas). 
+                        Jika data sudah sesuai dengan fakta kerja di lapangan, karyawan menekan tombol <strong>ACC</strong> (status berubah menjadi Disetujui). 
+                        Jika terdapat perbedaan jam, karyawan menekan tombol <strong>Tolak</strong> disertai alasan agar diperbaiki oleh Mandor.
+                    </p>
+                    <div class="checklist-grid">
+                        <div class="check-item"><span class="check-icon">✓</span> Akses mandiri dari HP masing-masing</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Periksa jam mulai s/d selesai dan tugas</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Klik 'ACC' untuk persetujuan digital sah</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Klik 'Tolak' jika terdapat selisih jam kerja</div>
+                    </div>
+                </div>
+
+                <!-- Tahap 3 -->
+                <div class="pipeline-step">
+                    <div class="step-top-row">
+                        <span class="step-badge">Tahap 3 — Rekapitulasi Otomatis</span>
+                        <span class="step-actor-tag">Pelaksana: Admin Personalia</span>
+                    </div>
+                    <h3 class="step-title">Pemantauan & Rekapitulasi Data Tanpa Ketik Ulang Excel</h3>
+                    <p class="step-desc">
+                        Setiap pagi Admin tidak perlu lagi menerima kertas dari mandor dan mengetik ulang seluruh data ke Excel. 
+                        Admin cukup membuka dashboard SILEKA; seluruh rekaman data lembur dari seluruh shift sudah tersaji lengkap, transparan, dan terakumulasi secara otomatis. 
+                        Jika terjadi komplain selisih jam dari karyawan, Admin dapat mencari riwayat tanggal lampau dalam hitungan detik. 
+                        Laporan siap diekspor untuk dasar perhitungan penggajian lembur bulanan.
+                    </p>
+                    <div class="checklist-grid">
+                        <div class="check-item"><span class="check-icon">✓</span> Bebas tugas mengetik ulang ke Excel setiap pagi</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Perhitungan durasi otomatis (termasuk lintas malam)</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Pencarian riwayat komplain instan via filter tanggal</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Ekspor rekapitulasi data lembur untuk payroll</div>
+                    </div>
+                </div>
+
+                <!-- Tahap Cadangan (Cetak) -->
+                <div class="pipeline-step" style="border-left: 4px solid #64748b; background: #fafbfc;">
+                    <div class="step-top-row">
+                        <span class="step-badge-cadangan">Opsi Cadangan — Cetak Fisik PROS-HCM-02</span>
+                        <span class="step-actor-tag">Pelaksana: Mandor / Admin (Bila Diperlukan)</span>
+                    </div>
+                    <h3 class="step-title">Pencetakan Kertas Fisik untuk Tanda Tangan Basah</h3>
+                    <p class="step-desc">
+                        Sistem SILEKA didesain 100% paperless dengan persetujuan digital di aplikasi. 
+                        Namun Admin juga dapat menggunakan fitur <strong>Cetak SPL</strong>. 
+                        Sistem akan menghasilkan formulir standar resmi <strong>PROS-HCM-02 </strong> pas 1 lembar kertas A4 portrait yang bersih dari elemen navigasi web, 
+                        siap dicetak untuk ditandatangani basah secara fisik di kantor.
+                    </p>
+                    <div class="checklist-grid" style="background: white;">
+                        <div class="check-item"><span class="check-icon">✓</span> Format resmi PROS-HCM-02 pas 1 halaman A4 Portrait</div>
+                        <div class="check-item"><span class="check-icon">✓</span> Kolom lengkap: No, ID Employee, Nama, Stasiun, Jam & Paraf</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 4: Matriks RACI (3 Aktor) -->
+        <section>
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Matriks Tanggung Jawab (RACI Matrix)</h2>
+                    <div class="section-subtitle">Distribusi wewenang 3 peran dalam alur kerja SILEKA</div>
+                </div>
+            </div>
+
+            <div class="raci-table-container">
+                <table class="raci-table">
+                    <thead>
+                        <tr>
+                            <th class="th-activity">Tahapan Aktivitas Operasional</th>
+                            <th>Mandor</th>
+                            <th>Karyawan</th>
+                            <th>Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="td-activity">1. Pemeliharaan Master Data Karyawan, Stasiun & Regu Shift</td>
+                            <td><span class="raci-badge raci-c" title="Consulted">C</span></td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                            <td><span class="raci-badge raci-r" title="Responsible">R</span> <span class="raci-badge raci-a" title="Accountable">A</span></td>
+                        </tr>
+                        <tr>
+                            <td class="td-activity">2. Penyusunan SPL Harian Regu Shift & Jam Lembur</td>
+                            <td><span class="raci-badge raci-r" title="Responsible">R</span> <span class="raci-badge raci-a" title="Accountable">A</span></td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                        </tr>
+                        <tr>
+                            <td class="td-activity">3. Penetapan Status Lembur vs Tidak Lembur & Alasan</td>
+                            <td><span class="raci-badge raci-r" title="Responsible">R</span> <span class="raci-badge raci-a" title="Accountable">A</span></td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                        </tr>
+                        <tr>
+                            <td class="td-activity">4. Verifikasi & ACC Digital Jam Lembur di Smartphone</td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                            <td><span class="raci-badge raci-r" title="Responsible">R</span> <span class="raci-badge raci-a" title="Accountable">A</span></td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                        </tr>
+                        <tr>
+                            <td class="td-activity">5. Rekapitulasi Otomatis & Penelusuran Riwayat Komplain</td>
+                            <td><span class="raci-badge raci-c" title="Consulted">C</span></td>
+                            <td><span class="raci-badge raci-i" title="Informed">I</span></td>
+                            <td><span class="raci-badge raci-r" title="Responsible">R</span> <span class="raci-badge raci-a" title="Accountable">A</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- RACI Legend -->
+            <div style="display: flex; gap: 16px; justify-content: center; font-size: 12px; color: var(--slate-600); flex-wrap: wrap;">
+                <div><span class="raci-badge raci-r" style="width:20px;height:20px;line-height:20px;margin-right:4px;">R</span> Responsible (Pelaksana Tugas)</div>
+                <div><span class="raci-badge raci-a" style="width:20px;height:20px;line-height:20px;margin-right:4px;">A</span> Accountable (Penanggung Jawab Utama)</div>
+                <div><span class="raci-badge raci-c" style="width:20px;height:20px;line-height:20px;margin-right:4px;">C</span> Consulted (Pemberi Masukan)</div>
+                <div><span class="raci-badge raci-i" style="width:20px;height:20px;line-height:20px;margin-right:4px;">I</span> Informed (Penerima Laporan)</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>SILEKA — Sistem Informasi Lembur Karyawan</strong></p>
+            <p>Pabrik Kelapa Sawit PT. Letawa | Standar Operasional Prosedur (SOP-HCM-2026)</p>
+            <p style="margin-top: 6px; font-size: 11px;">Dokumen ini dapat diunduh dalam format <strong>Word (.docx)</strong> atau dicetak langsung ke PDF.</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>

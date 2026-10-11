@@ -4,19 +4,19 @@ import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <div
-        class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0"
-    >
-        <div>
-            <Link href="/">
-                <ApplicationLogo class="h-20 w-20 fill-current text-gray-500" />
+    <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
+        <div class="w-full max-w-md">
+            <Link href="/" class="flex items-center justify-center gap-3 mb-8">
+                <ApplicationLogo class="h-11 w-11" />
+                <div class="leading-tight">
+                    <div class="text-xl font-extrabold tracking-tight text-slate-900">SILEKA</div>
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Sistem Informasi Lembur</div>
+                </div>
             </Link>
-        </div>
 
-        <div
-            class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg"
-        >
-            <slot />
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/60 px-7 py-8">
+                <slot />
+            </div>
         </div>
     </div>
 </template>
