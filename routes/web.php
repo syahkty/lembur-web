@@ -30,8 +30,9 @@ Route::middleware('auth')->group(function () {
     // Riwayat Lembur (Karyawan, Mandor, Admin)
     Route::get('/lembur/riwayat', [LemburController::class, 'riwayat'])->name('lembur.riwayat');
 
-    // Aksi Karyawan terhadap SPL (ACC, Upload Foto, Tolak)
+    // Aksi Karyawan terhadap SPL (ACC, Batal ACC, Upload Foto, Tolak)
     Route::patch('/lembur/{lembur}/acc', [LemburController::class, 'acc'])->name('lembur.acc');
+    Route::patch('/lembur/{lembur}/batal-acc', [LemburController::class, 'batalAcc'])->name('lembur.batal_acc');
     Route::post('/lembur/{lembur}/foto', [LemburController::class, 'uploadFoto'])->name('lembur.foto');
     Route::patch('/lembur/{lembur}/tolak', [LemburController::class, 'tolak'])->name('lembur.tolak');
 

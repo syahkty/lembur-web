@@ -9,6 +9,7 @@ const props = defineProps({
 });
 
 const isRevisi = computed(() => props.lembur.status === 'ditolak');
+const isDisetujui = computed(() => props.lembur.status === 'disetujui');
 
 const form = useForm({
     tanggal: props.lembur.tanggal || '',
@@ -73,6 +74,7 @@ function onKategoriChange(val) {
 }
 
 function submit() {
+    if (isDisetujui.value) return;
     form.patch(route('lembur.update', props.lembur.id));
 }
 </script>
@@ -97,6 +99,16 @@ function submit() {
         <div class="py-6">
             <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200 p-6 space-y-6">
+
+                    <!-- Peringatan jika sudah disetujui (ACC) -->
+                    <div v-if="isDisetujui" class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <h4 class="font-bold text-xs text-amber-800 flex items-center gap-1.5">
+                            <span>🔒</span> Lembur Terkunci (Sudah di-ACC)
+                        </h4>
+                        <p class="text-xs text-amber-700 mt-1">
+                            Lembur ini telah disetujui (ACC) oleh karyawan dan tidak dapat diubah oleh mandor. Jika ada kesalahan data, minta karyawan yang bersangkutan untuk membatalkan ACC terlebih dahulu di dashboard.
+                        </p>
+                    </div>
 
                     <!-- Info Karyawan -->
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
@@ -296,10 +308,10 @@ function submit() {
                             </a>
                             <button
                                 type="submit"
-                                class="bg-emerald-700 text-white px-5 py-2 rounded-xl hover:bg-emerald-800 font-bold text-xs shadow-md shadow-emerald-700/20 transition"
-                                :disabled="form.processing"
+                                class="bg-emerald-700 text-white px-5 py-2 rounded-xl hover:bg-emerald-800 font-bold text-xs shadow-md shadow-emerald-700/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="form.processing || isDisetujui"
                             >
-                                {{ isRevisi ? 'Simpan & Kirim Revisi' : 'Simpan Perubahan' }}
+                                {{ isDisetujui ? '🔒 Terkunci (Sudah di-ACC)' : (isRevisi ? 'Simpan & Kirim Revisi' : 'Simpan Perubahan') }}
                             </button>
                         </div>
                     </form>

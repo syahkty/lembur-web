@@ -78,6 +78,17 @@ async function confirmHapusLembur(lemburId) {
     if (ok) router.delete(route('lembur.destroy', lemburId), { preserveScroll: true });
 }
 
+async function confirmBatalAcc(lemburId) {
+    const ok = await confirmDialog({
+        title: 'Batalkan Persetujuan (ACC)?',
+        text: 'Tanda tangan digital Anda akan ditarik dan status lembur kembali menjadi Pending sehingga mandor dapat memperbaikinya.',
+        confirmText: 'Ya, Batalkan ACC',
+        cancelText: 'Tidak',
+        danger: true,
+    });
+    if (ok) router.patch(route('lembur.batal_acc', lemburId), {}, { preserveScroll: true });
+}
+
 function formatTanggalIndo(tgl) {
     if (!tgl) return '';
     const d = new Date(tgl);
@@ -272,23 +283,42 @@ function formatTanggalIndo(tgl) {
                                             </button>
                                         </div>
 
-                                        <!-- Mandor / Admin: Edit & Hapus -->
-                                        <div v-if="userRole === 'mandor' || userRole === 'admin'" class="flex items-center gap-1.5 justify-center">
-                                            <Link
-                                                :href="route('lembur.edit', lembur.id)"
-                                                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-lg transition"
-                                                :class="lembur.status === 'ditolak' ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
-                                            >
-                                                {{ lembur.status === 'ditolak' ? '✏️ Revisi' : '✏️ Edit' }}
-                                            </Link>
+                                        <!-- Karyawan: Batalkan ACC jika sudah disetujui -->
+                                        <div v-else-if="userRole === 'karyawan' && lembur.status === 'disetujui'" class="flex justify-center">
                                             <button
                                                 type="button"
-                                                @click="confirmHapusLembur(lembur.id)"
-                                                class="inline-flex items-center px-2 py-1 text-xs font-semibold text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition"
-                                                title="Hapus baris lembur ini"
+                                                @click="confirmBatalAcc(lembur.id)"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition shadow-sm"
+                                                title="Batalkan persetujuan jika data lembur perlu diperbaiki oleh mandor"
                                             >
-                                                🗑️
+                                                <span>↩️</span> Batalkan ACC
                                             </button>
+                                        </div>
+
+                                        <!-- Mandor / Admin: Edit & Hapus (Terkunci jika sudah di-ACC oleh karyawan) -->
+                                        <div v-if="userRole === 'mandor' || userRole === 'admin'" class="flex items-center gap-1.5 justify-center">
+                                            <template v-if="lembur.status === 'disetujui'">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg" title="Lembur telah di-ACC oleh karyawan dan tidak dapat diubah">
+                                                    🔒 Terkunci (ACC)
+                                                </span>
+                                            </template>
+                                            <template v-else>
+                                                <Link
+                                                    :href="route('lembur.edit', lembur.id)"
+                                                    class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-lg transition"
+                                                    :class="lembur.status === 'ditolak' ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                                                >
+                                                    {{ lembur.status === 'ditolak' ? '✏️ Revisi' : '✏️ Edit' }}
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    @click="confirmHapusLembur(lembur.id)"
+                                                    class="inline-flex items-center px-2 py-1 text-xs font-semibold text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition"
+                                                    title="Hapus baris lembur ini"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </template>
                                         </div>
                                     </td>
                                 </tr>
@@ -410,21 +440,39 @@ function formatTanggalIndo(tgl) {
                                     </button>
                                 </div>
 
-                                <!-- Mandor/Admin Edit/Hapus -->
-                                <div v-if="userRole === 'mandor' || userRole === 'admin'" class="flex gap-2">
-                                    <Link
-                                        :href="route('lembur.edit', lembur.id)"
-                                        class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
-                                    >
-                                        ✏️ Edit
-                                    </Link>
+                                <!-- Karyawan Batalkan ACC jika sudah disetujui -->
+                                <div v-else-if="userRole === 'karyawan' && lembur.status === 'disetujui'" class="w-full">
                                     <button
                                         type="button"
-                                        @click="confirmHapusLembur(lembur.id)"
-                                        class="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
+                                        @click="confirmBatalAcc(lembur.id)"
+                                        class="w-full bg-amber-50 text-amber-700 border border-amber-200 py-2 rounded-xl text-xs font-bold text-center hover:bg-amber-100 transition flex items-center justify-center gap-1.5"
                                     >
-                                        🗑️ Hapus
+                                        <span>↩️</span> Batalkan Persetujuan (ACC)
                                     </button>
+                                </div>
+
+                                <!-- Mandor/Admin Edit/Hapus -->
+                                <div v-if="userRole === 'mandor' || userRole === 'admin'" class="flex gap-2 items-center">
+                                    <template v-if="lembur.status === 'disetujui'">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg">
+                                            🔒 Terkunci (Sudah di-ACC)
+                                        </span>
+                                    </template>
+                                    <template v-else>
+                                        <Link
+                                            :href="route('lembur.edit', lembur.id)"
+                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+                                        >
+                                            ✏️ Edit
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            @click="confirmHapusLembur(lembur.id)"
+                                            class="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"
+                                        >
+                                            🗑️ Hapus
+                                        </button>
+                                    </template>
                                 </div>
                             </div>
                         </div>

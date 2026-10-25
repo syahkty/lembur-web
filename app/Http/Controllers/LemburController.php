@@ -141,6 +141,15 @@ class LemburController extends Controller
                     continue;
                 }
 
+                $existing = Lembur::where('user_id', $item['user_id'])
+                    ->where('tanggal', $request->tanggal)
+                    ->first();
+
+                // Jangan timpa jika lembur sudah di-ACC oleh karyawan
+                if ($existing && $existing->status === 'disetujui') {
+                    continue;
+                }
+
                 Lembur::updateOrCreate(
                     [
                         'user_id' => $item['user_id'],
@@ -177,6 +186,11 @@ class LemburController extends Controller
             abort(403, 'Akses ditolak.');
         }
 
+        if ($lembur->status === 'disetujui') {
+            return redirect()->route('dashboard', ['tanggal' => $lembur->tanggal])
+                ->with('error', 'Lembur ini sudah di-ACC oleh karyawan dan terkunci dari perubahan.');
+        }
+
         $lembur->load(['user.stasiun']);
 
         return Inertia::render('Lembur/Edit', [
@@ -194,6 +208,11 @@ class LemburController extends Controller
 
         if ($user->role !== 'admin' && ($user->role !== 'mandor' || $lembur->mandor_id !== $user->id)) {
             abort(403, 'Akses ditolak.');
+        }
+
+        if ($lembur->status === 'disetujui') {
+            return redirect()->route('dashboard', ['tanggal' => $lembur->tanggal])
+                ->with('error', 'Lembur ini sudah disetujui (ACC) oleh karyawan dan tidak dapat diubah oleh mandor. Minta karyawan untuk membatalkan ACC terlebih dahulu jika perlu revisi.');
         }
 
         $request->validate([
@@ -239,6 +258,11 @@ class LemburController extends Controller
 
         if ($user->role !== 'admin' && ($user->role !== 'mandor' || $lembur->mandor_id !== $user->id)) {
             abort(403, 'Akses ditolak.');
+        }
+
+        if ($lembur->status === 'disetujui') {
+            return redirect()->back()
+                ->with('error', 'Lembur yang sudah di-ACC oleh karyawan tidak dapat dihapus.');
         }
 
         $lembur->delete();
@@ -308,6 +332,30 @@ class LemburController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Lembur berhasil disetujui dengan tanda tangan digital.');
+    }
+
+    /**
+     * Karyawan membatalkan persetujuan (ACC) lembur
+     */
+    public function batalAcc(Lembur $lembur)
+    {
+        $user = auth()->user();
+        if ($user->id !== $lembur->user_id) {
+            abort(403, 'Hanya karyawan pemilik lembur yang dapat membatalkan persetujuan.');
+        }
+
+        if ($lembur->status !== 'disetujui') {
+            return redirect()->back()->with('error', 'Lembur ini belum atau tidak dalam status disetujui.');
+        }
+
+        $lembur->update([
+            'status'             => 'pending',
+            'tanda_tangan'       => null,
+            'jam_lembur_dibayar' => null,
+            'upah_lembur'        => null,
+        ]);
+
+        return redirect()->back()->with('success', 'Persetujuan lembur berhasil dibatalkan. Status kembali ke Pending dan dapat direvisi oleh mandor jika diperlukan.');
     }
 
     /**
