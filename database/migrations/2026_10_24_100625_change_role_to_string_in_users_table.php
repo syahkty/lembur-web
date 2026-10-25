@@ -14,13 +14,34 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // MySQL: ubah kolom ENUM menjadi string
-        DB::statement("ALTER TABLE users MODIFY role VARCHAR(50) NOT NULL DEFAULT 'karyawan'");
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            // PostgreSQL syntax
+            DB::statement("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+            DB::statement("ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(50) USING role::VARCHAR(50)");
+            DB::statement("ALTER TABLE users ALTER COLUMN role SET DEFAULT 'karyawan'");
+            DB::statement("ALTER TABLE users ALTER COLUMN role SET NOT NULL");
+        } elseif ($driver === 'sqlite') {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('role', 50)->default('karyawan')->change();
+            });
+        } else {
+            // MySQL / MariaDB syntax
+            DB::statement("ALTER TABLE users MODIFY role VARCHAR(50) NOT NULL DEFAULT 'karyawan'");
+        }
     }
 
     public function down(): void
     {
-        // Kembalikan ke ENUM (hanya role yang sudah ada di data)
-        DB::statement("ALTER TABLE users MODIFY role ENUM('admin','mandor','karyawan','asisten','askep','ktu','administratur','hrga') NOT NULL DEFAULT 'karyawan'");
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(50)");
+        } elseif ($driver === 'sqlite') {
+            // No-op for sqlite
+        } else {
+            DB::statement("ALTER TABLE users MODIFY role ENUM('admin','mandor','karyawan','asisten','askep','ktu','administratur','hrga') NOT NULL DEFAULT 'karyawan'");
+        }
     }
 };
