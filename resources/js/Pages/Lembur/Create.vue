@@ -295,7 +295,7 @@ async function submit() {
 </script>
 
 <template>
-    <Head title="Buat SPL Harian" />
+    <Head title="Buat SPL" />
     <AuthenticatedLayout>
         <template #header>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

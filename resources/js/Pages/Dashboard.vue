@@ -87,13 +87,13 @@ function formatTanggalIndo(tgl) {
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="SPL" />
     <AuthenticatedLayout>
         <template #header>
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div>
                     <h2 class="font-extrabold text-xl text-slate-900 leading-tight">
-                        Dashboard Sistem Lembur
+                        Surat Perintah Lembur (SPL)
                     </h2>
                     <p class="text-xs text-slate-500 mt-0.5">
                         Pantau instruksi kerja lembur harian pabrik kelapa sawit PT. Letawa

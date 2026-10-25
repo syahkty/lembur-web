@@ -36,7 +36,7 @@ function formatTanggalIndo(tgl) {
 </script>
 
 <template>
-    <Head title="Laporan Realisasi Kerja Lembur (LRLK)" />
+    <Head title="LRLK (Realisasi)" />
 
     <AuthenticatedLayout>
         <template #header>

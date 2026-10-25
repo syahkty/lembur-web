@@ -76,7 +76,7 @@ const paddedItems = computed(() => {
 </script>
 
 <template>
-    <Head :title="previewMode ? 'Preview Laporan Realisasi Kerja Lembur (LRLK)' : 'Cetak Laporan Realisasi Kerja Lembur (LRLK)'" />
+    <Head :title="previewMode ? 'Preview LRLK' : 'Cetak LRLK'" />
 
     <!-- Floating Action Toolbar (Hanya muncul di layar, 100% hilang saat cetak/print) -->
     <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 text-xs">

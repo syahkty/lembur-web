@@ -229,13 +229,13 @@ function roleBadgeClass(role) {
 </script>
 
 <template>
-    <Head title="Kelola Karyawan" />
+    <Head title="Kelola Akun" />
     <AuthenticatedLayout>
         <template #header>
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <div>
                     <h2 class="font-bold text-xl text-gray-800 leading-tight">
-                        Kelola Karyawan & Pembagian Shift
+                        Kelola Akun & Pembagian Shift
                     </h2>
                     <p class="text-xs text-gray-500 mt-0.5">
                         Pisahkan dan atur karyawan per Shift 1 (Mandor A) atau Shift 2 (Mandor B) secara langsung.

@@ -60,7 +60,7 @@ const paddedLemburs = computed(() => {
 </script>
 
 <template>
-    <Head :title="previewMode ? 'Preview Surat Perintah Kerja Lembur (SPL)' : 'Cetak Surat Perintah Kerja Lembur (SPL)'" />
+    <Head :title="previewMode ? 'Preview SPL' : 'Cetak'" />
 
     <!-- Floating Action Toolbar (Hanya melayang di layar, 100% hilang saat dicetak) -->
     <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 text-xs">

@@ -49,7 +49,7 @@ function formatTanggalIndo(tgl) {
 </script>
 
 <template>
-    <Head title="Riwayat Lembur & Upah" />
+    <Head title="Riwayat Lembur" />
     <AuthenticatedLayout>
         <template #header>
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
