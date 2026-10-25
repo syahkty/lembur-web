@@ -7,6 +7,15 @@ const props = defineProps({
     tanggal: String,
     totalJamDibayar: Number,
     userRole: String,
+    docSignatures: {
+        type: Object,
+        default: () => ({}),
+    },
+    // true = mode preview untuk penandatangan (tanpa opsi cetak)
+    previewMode: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const selectedTanggal = ref(props.tanggal);
@@ -25,7 +34,8 @@ const namaDibuat = ref('Tommy M.');
 const jabatanDibuat = ref('Kabag HRGA');
 
 function filterTanggal() {
-    router.get(route('lembur.lrlk.print'), { tanggal: selectedTanggal.value }, { preserveState: true });
+    const target = props.previewMode ? 'dokumen.preview.lrlk' : 'lembur.lrlk.print';
+    router.get(route(target), { tanggal: selectedTanggal.value }, { preserveState: true });
 }
 
 function cetakDokumen() {
@@ -66,7 +76,7 @@ const paddedItems = computed(() => {
 </script>
 
 <template>
-    <Head title="Cetak Laporan Realisasi Kerja Lembur (LRLK)" />
+    <Head :title="previewMode ? 'Preview Laporan Realisasi Kerja Lembur (LRLK)' : 'Cetak Laporan Realisasi Kerja Lembur (LRLK)'" />
 
     <!-- Floating Action Toolbar (Hanya muncul di layar, 100% hilang saat cetak/print) -->
     <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 text-xs">
@@ -80,20 +90,42 @@ const paddedItems = computed(() => {
             />
         </div>
 
-        <a :href="route('lembur.lrlk', { tanggal: selectedTanggal })" class="text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition font-medium">
-            ← Kembali ke LRLK
-        </a>
+        <!-- Mode Preview (Penandatangan): tanpa tombol cetak -->
+        <template v-if="previewMode">
+            <a :href="route('dokumen.index', { tanggal: selectedTanggal })" class="text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition font-medium">
+                ← Kembali
+            </a>
+            <a :href="route('dokumen.preview.spl', { tanggal: selectedTanggal })" class="text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-slate-800 transition font-bold">
+                📄 Preview SPL
+            </a>
+            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full font-bold">
+                👁️ Mode Preview
+            </span>
+        </template>
 
-        <button
-            @click="cetakDokumen"
-            class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-full font-bold shadow transition flex items-center gap-1.5"
-        >
-            <span>🖨️</span> Cetak / Simpan PDF
-        </button>
+        <!-- Mode Cetak (Admin) -->
+        <template v-else>
+            <a :href="route('dashboard')" class="text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition font-medium">
+                ← Dashboard
+            </a>
+            <a :href="route('lembur.print', { tanggal: selectedTanggal })" class="text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-slate-800 transition font-bold">
+                📄 Cetak SPL
+            </a>
+            <button
+                @click="cetakDokumen"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-full font-bold shadow transition flex items-center gap-1.5"
+            >
+                <span>🖨️</span> Cetak
+            </button>
+        </template>
     </div>
 
     <!-- Tampilan Murni Kertas A4 Sesuai Foto Fisik -->
-    <div class="paper-wrapper min-h-screen bg-slate-200 py-6 px-4 print:p-0 print:m-0 print:bg-white flex justify-center">
+    <!-- Mode preview: kertas disembunyikan saat Ctrl+P agar tidak bisa dicetak -->
+    <div
+        class="paper-wrapper min-h-screen bg-slate-200 py-6 px-4 print:p-0 print:m-0 print:bg-white flex justify-center"
+        :class="{ 'preview-locked': previewMode }"
+    >
         <div class="print-area bg-white w-full max-w-[210mm] p-6 shadow-xl print:shadow-none print:p-0 print:w-full print:max-w-none text-black box-border" style="font-family: Arial, Helvetica, sans-serif;">
 
             <!-- Header & Kop Dokumen -->
@@ -240,31 +272,52 @@ const paddedItems = computed(() => {
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Space untuk Tanda Tangan Basah -->
+                        <!-- Space untuk Tanda Tangan Digital / Basah -->
                         <tr class="h-14">
-                            <td class="border border-black align-bottom pb-1">
-                                <input
-                                    type="text"
-                                    v-model="namaDisetujui"
-                                    class="no-print-border font-bold text-center w-full text-[9.5px] p-0 focus:outline-none"
+                            <!-- Disetujui: Administratur -->
+                            <td class="border border-black align-bottom pb-1 relative">
+                                <img
+                                    v-if="docSignatures?.administratur?.tanda_tangan"
+                                    :src="docSignatures.administratur.tanda_tangan"
+                                    alt="TTD Administratur"
+                                    class="absolute inset-0 max-h-10 max-w-full object-contain m-auto"
                                 />
-                                <div class="text-[8.5px] text-gray-700 leading-none mt-0.5">{{ jabatanDisetujui }}</div>
+                                <div class="font-bold text-center w-full text-[9.5px]">
+                                    {{ docSignatures?.administratur?.nama || namaDisetujui }}
+                                </div>
+                                <div class="text-[8.5px] text-gray-700 leading-none mt-0.5">
+                                    {{ docSignatures?.administratur?.jabatan || jabatanDisetujui }}
+                                </div>
                             </td>
-                            <td class="border border-black align-bottom pb-1">
-                                <input
-                                    type="text"
-                                    v-model="namaDiketahui"
-                                    class="no-print-border font-bold text-center w-full text-[9.5px] p-0 focus:outline-none"
+                            <!-- Diketahui: KTU (hanya TTD milik KTU) -->
+                            <td class="border border-black align-bottom pb-1 relative">
+                                <img
+                                    v-if="docSignatures?.ktu?.tanda_tangan"
+                                    :src="docSignatures.ktu.tanda_tangan"
+                                    alt="TTD KTU"
+                                    class="absolute inset-0 max-h-10 max-w-full object-contain m-auto"
                                 />
-                                <div class="text-[8.5px] text-gray-700 leading-none mt-0.5">{{ jabatanDiketahui }}</div>
+                                <div class="font-bold text-center w-full text-[9.5px]">
+                                    {{ docSignatures?.ktu?.nama || namaDiketahui }}
+                                </div>
+                                <div class="text-[8.5px] text-gray-700 leading-none mt-0.5">
+                                    {{ docSignatures?.ktu?.jabatan || jabatanDiketahui }}
+                                </div>
                             </td>
-                            <td class="border border-black align-bottom pb-1">
-                                <input
-                                    type="text"
-                                    v-model="namaDibuat"
-                                    class="no-print-border font-bold text-center w-full text-[9.5px] p-0 focus:outline-none"
+                            <!-- Dibuat: Asisten (hanya TTD milik Asisten) -->
+                            <td class="border border-black align-bottom pb-1 relative">
+                                <img
+                                    v-if="docSignatures?.asisten?.tanda_tangan"
+                                    :src="docSignatures.asisten.tanda_tangan"
+                                    alt="TTD Asisten"
+                                    class="absolute inset-0 max-h-10 max-w-full object-contain m-auto"
                                 />
-                                <div class="text-[8.5px] text-gray-700 leading-none mt-0.5">{{ jabatanDibuat }}</div>
+                                <div class="font-bold text-center w-full text-[9.5px]">
+                                    {{ docSignatures?.asisten?.nama || namaDibuat }}
+                                </div>
+                                <div class="text-[8.5px] text-gray-700 leading-none mt-0.5">
+                                    {{ docSignatures?.asisten?.jabatan || jabatanDibuat }}
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -288,6 +341,10 @@ const paddedItems = computed(() => {
         padding: 0 !important;
         margin: 0 !important;
         background: white !important;
+    }
+    /* Mode preview penandatangan: dokumen tidak boleh dicetak */
+    .paper-wrapper.preview-locked {
+        display: none !important;
     }
     .print-area {
         box-shadow: none !important;

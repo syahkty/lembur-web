@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Lembur;
 use App\Models\User;
 use App\Models\Stasiun;
+use App\Models\DocumentSignature;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,13 @@ class LemburController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+
+        // Penandatangan dokumen punya halaman tersendiri
+        $penandatangan = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
+        if (in_array($user->role, $penandatangan)) {
+            return redirect()->route('dokumen.index', $request->only('tanggal'));
+        }
+
         $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
         $query = Lembur::with(['user.stasiun', 'mandor'])->where('tanggal', $tanggal)->latest();
@@ -448,9 +456,10 @@ class LemburController extends Controller
         }
 
         return Inertia::render('Lembur/Print', [
-            'lemburs' => $query->orderBy('id')->get(),
-            'tanggal' => $tanggal,
-            'userRole' => $user->role,
+            'lemburs'       => $query->orderBy('id')->get(),
+            'tanggal'       => $tanggal,
+            'userRole'      => $user->role,
+            'docSignatures' => $this->getDocSignatures($tanggal),
         ]);
     }
 
@@ -576,11 +585,51 @@ class LemburController extends Controller
         });
 
         return Inertia::render('Lembur/PrintLrlk', [
-            'items' => $items,
-            'tanggal' => $tanggal,
+            'items'          => $items,
+            'tanggal'        => $tanggal,
             'totalJamDibayar' => $totalJamDibayar,
             'totalUpahLembur' => 0,
-            'userRole' => $user->role,
+            'userRole'       => $user->role,
+            'docSignatures'  => $this->getDocSignatures($tanggal),
         ]);
+    }
+
+    /**
+     * Ambil tanda tangan digital para penandatangan dokumen untuk tanggal tertentu
+     */
+    private function getDocSignatures(string $tanggal): array
+    {
+        $roles = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
+        $jabatanMap = [
+            'asisten'       => 'Asisten',
+            'askep'         => 'Asisten Kepala',
+            'ktu'           => 'KTU',
+            'administratur' => 'Administratur',
+            'hrga'          => 'Staff HRGA',
+        ];
+
+        $result = [];
+        foreach ($roles as $role) {
+            $userWithRole = User::where('role', $role)->first();
+            if (!$userWithRole) continue;
+
+            // Cari TTD untuk tanggal ini, fallback ke permanen
+            $sig = DocumentSignature::where('user_id', $userWithRole->id)
+                ->where('tanggal', $tanggal)
+                ->whereNull('jenis_dokumen')
+                ->first()
+                ?? DocumentSignature::where('user_id', $userWithRole->id)
+                    ->whereNull('tanggal')
+                    ->whereNull('jenis_dokumen')
+                    ->first();
+
+            $result[$role] = [
+                'nama'         => $userWithRole->name,
+                'jabatan'      => $jabatanMap[$role] ?? $role,
+                'tanda_tangan' => $sig?->tanda_tangan,
+            ];
+        }
+
+        return $result;
     }
 }

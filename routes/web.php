@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LemburController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\StasiunController;
+use App\Http\Controllers\DokumenController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -42,15 +43,17 @@ Route::middleware('auth')->group(function () {
         Route::patch('/lembur/{lembur}', [LemburController::class, 'update'])->name('lembur.update');
         Route::delete('/lembur/{lembur}', [LemburController::class, 'destroy'])->name('lembur.destroy');
 
-        // Cetak Dokumen SPL & LRLK
-        Route::get('/lembur/print', [LemburController::class, 'print'])->name('lembur.print');
+        // Lihat data LRLK (tanpa cetak untuk mandor)
         Route::get('/lembur/lrlk', [LemburController::class, 'lrlk'])->name('lembur.lrlk');
-        Route::get('/lembur/lrlk/print', [LemburController::class, 'printLrlk'])->name('lembur.lrlk.print');
     });
 
     // ===== KHUSUS ADMINISTRATOR =====
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin', fn () => redirect()->route('admin.karyawan'))->name('admin');
+
+        // Cetak Dokumen SPL & LRLK (khusus admin)
+        Route::get('/lembur/print', [LemburController::class, 'print'])->name('lembur.print');
+        Route::get('/lembur/lrlk/print', [LemburController::class, 'printLrlk'])->name('lembur.lrlk.print');
 
         // Admin: Kelola Karyawan
         Route::get('/admin/karyawan', [KaryawanController::class, 'index'])->name('admin.karyawan');
@@ -63,6 +66,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/stasiun', [StasiunController::class, 'store'])->name('admin.stasiun.store');
         Route::patch('/admin/stasiun/{stasiun}', [StasiunController::class, 'update'])->name('admin.stasiun.update');
         Route::delete('/admin/stasiun/{stasiun}', [StasiunController::class, 'destroy'])->name('admin.stasiun.destroy');
+    });
+
+    // ===== KHUSUS PENANDATANGAN DOKUMEN (Asisten, Askep, KTU, Administratur, HRGA) =====
+    Route::middleware('role:asisten,askep,ktu,administratur,hrga')->group(function () {
+        Route::get('/dokumen', [DokumenController::class, 'index'])->name('dokumen.index');
+        Route::post('/dokumen/tanda-tangan', [DokumenController::class, 'simpanTandaTangan'])->name('dokumen.ttd');
+        // Preview bentuk cetak (read-only, tanpa opsi cetak)
+        Route::get('/dokumen/preview/spl', [DokumenController::class, 'printSpl'])->name('dokumen.preview.spl');
+        Route::get('/dokumen/preview/lrlk', [DokumenController::class, 'printLrlk'])->name('dokumen.preview.lrlk');
     });
 });
 

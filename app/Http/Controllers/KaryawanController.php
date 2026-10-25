@@ -46,7 +46,7 @@ class KaryawanController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => ['required', Rules\Password::defaults()],
             'no_employe' => 'nullable|string|max:50',
-            'role' => 'required|in:admin,mandor,karyawan',
+            'role' => 'required|in:admin,mandor,karyawan,asisten,askep,ktu,administratur,hrga',
             'stasiun_id' => 'nullable|exists:stasions,id',
             'shift' => 'nullable|in:1,2',
             'mandor_id' => 'nullable|exists:users,id',
@@ -57,8 +57,11 @@ class KaryawanController extends Controller
             'tarif_lembur_per_jam' => 'nullable|numeric|min:0',
         ]);
 
+        $signerRoles = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
+        $isSigner = in_array($request->role, $signerRoles);
+
         $mandorId = $request->mandor_id;
-        if (!$mandorId && $request->shift) {
+        if (!$isSigner && !$mandorId && $request->shift) {
             $matchedMandor = User::where('role', 'mandor')->where('shift', $request->shift)->first();
             if ($matchedMandor) {
                 $mandorId = $matchedMandor->id;
@@ -71,14 +74,14 @@ class KaryawanController extends Controller
             'password' => Hash::make($request->password),
             'no_employe' => $request->no_employe,
             'role' => $request->role,
-            'stasiun_id' => $request->stasiun_id,
-            'shift' => $request->shift,
-            'mandor_id' => $mandorId,
-            'gaji_pokok' => $request->gaji_pokok ?: null,
-            'status_pernikahan' => $request->status_pernikahan ?: 'TK',
-            'jatah_beras_kg' => $request->jatah_beras_kg !== null && $request->jatah_beras_kg !== '' ? $request->jatah_beras_kg : 15.00,
-            'harga_beras_per_kg' => $request->harga_beras_per_kg !== null && $request->harga_beras_per_kg !== '' ? $request->harga_beras_per_kg : 14000.00,
-            'tarif_lembur_per_jam' => $request->tarif_lembur_per_jam ?: null,
+            'stasiun_id' => $isSigner ? null : $request->stasiun_id,
+            'shift' => $isSigner ? null : $request->shift,
+            'mandor_id' => $isSigner ? null : $mandorId,
+            'gaji_pokok' => $isSigner ? 0 : ($request->gaji_pokok ?: 0),
+            'status_pernikahan' => $isSigner ? 'TK' : ($request->status_pernikahan ?: 'TK'),
+            'jatah_beras_kg' => $isSigner ? 0 : ($request->jatah_beras_kg !== null && $request->jatah_beras_kg !== '' ? $request->jatah_beras_kg : 15.00),
+            'harga_beras_per_kg' => $isSigner ? 0 : ($request->harga_beras_per_kg !== null && $request->harga_beras_per_kg !== '' ? $request->harga_beras_per_kg : 14000.00),
+            'tarif_lembur_per_jam' => $isSigner ? 0 : ($request->tarif_lembur_per_jam ?: 0),
         ]);
 
         return redirect()->back()->with('success', 'User berhasil ditambahkan.');
@@ -92,7 +95,7 @@ class KaryawanController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
             'no_employe' => 'nullable|string|max:50',
-            'role' => 'sometimes|required|in:admin,mandor,karyawan',
+            'role' => 'sometimes|required|in:admin,mandor,karyawan,asisten,askep,ktu,administratur,hrga',
             'stasiun_id' => 'nullable|exists:stasions,id',
             'shift' => 'nullable|in:1,2',
             'mandor_id' => 'nullable|exists:users,id',
@@ -108,12 +111,32 @@ class KaryawanController extends Controller
             'gaji_pokok', 'status_pernikahan', 'jatah_beras_kg', 'harga_beras_per_kg', 'tarif_lembur_per_jam'
         );
 
-        // Jika shift diubah tanpa menyebut mandor_id, otomatis pasangkan ke mandor shift tersebut
-        if ($request->has('shift') && !$request->filled('mandor_id') && $request->shift) {
-            $matchedMandor = User::where('role', 'mandor')->where('shift', $request->shift)->first();
-            if ($matchedMandor) {
-                $data['mandor_id'] = $matchedMandor->id;
+        $signerRoles = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
+        $effectiveRole = $data['role'] ?? $user->role;
+        $isSigner = in_array($effectiveRole, $signerRoles);
+
+        if ($isSigner) {
+            $data['stasiun_id'] = null;
+            $data['shift'] = null;
+            $data['mandor_id'] = null;
+            $data['gaji_pokok'] = 0;
+            $data['status_pernikahan'] = 'TK';
+            $data['jatah_beras_kg'] = 0;
+            $data['harga_beras_per_kg'] = 0;
+            $data['tarif_lembur_per_jam'] = 0;
+        } else {
+            // Jika shift diubah tanpa menyebut mandor_id, otomatis pasangkan ke mandor shift tersebut
+            if ($request->has('shift') && !$request->filled('mandor_id') && $request->shift) {
+                $matchedMandor = User::where('role', 'mandor')->where('shift', $request->shift)->first();
+                if ($matchedMandor) {
+                    $data['mandor_id'] = $matchedMandor->id;
+                }
             }
+
+            // Pastikan field numerik yang wajib tidak null (gunakan 0 sebagai default)
+            $data['jatah_beras_kg'] = $data['jatah_beras_kg'] ?? 0;
+            $data['harga_beras_per_kg'] = $data['harga_beras_per_kg'] ?? 14000;
+            $data['gaji_pokok'] = $data['gaji_pokok'] ?? 0;
         }
 
         // Update password hanya jika diisi

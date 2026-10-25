@@ -17,7 +17,17 @@ const roleLabel = computed(() => ({
     admin: 'Admin',
     mandor: 'Mandor',
     karyawan: 'Karyawan',
+    asisten: 'Asisten',
+    askep: 'Asisten Kepala',
+    ktu: 'KTU',
+    administratur: 'Administratur',
+    hrga: 'Staff HRGA',
 }[userRole.value] ?? userRole.value));
+
+// Role penandatangan dokumen (bukan operator lapangan)
+const isPenandatangan = computed(() =>
+    ['asisten', 'askep', 'ktu', 'administratur', 'hrga'].includes(userRole.value)
+);
 
 const initials = computed(() =>
     (user.value?.name ?? '')
@@ -66,67 +76,94 @@ async function logout() {
 
                         <!-- Navigation Links -->
                         <div class="hidden h-full sm:ms-8 sm:flex sm:items-center sm:gap-1">
-                            <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                Dashboard
-                            </NavLink>
 
-                            <!-- Khusus Mandor: Buat SPL -->
-                            <NavLink
-                                v-if="userRole === 'mandor'"
-                                :href="route('lembur.create')"
-                                :active="route().current('lembur.create')"
-                            >
-                                Buat SPL
-                            </NavLink>
+                            <!-- ===== MENU PENANDATANGAN DOKUMEN (Asisten / Askep / KTU / Administratur / HRGA) ===== -->
+                            <template v-if="isPenandatangan">
+                                <NavLink
+                                    :href="route('dokumen.index')"
+                                    :active="route().current('dokumen.index')"
+                                >
+                                    📋 SPL &amp; LRLK
+                                </NavLink>
+                                <NavLink
+                                    :href="route('dokumen.preview.spl')"
+                                    :active="route().current('dokumen.preview.spl')"
+                                >
+                                    👁️ Preview SPL
+                                </NavLink>
+                                <NavLink
+                                    :href="route('dokumen.preview.lrlk')"
+                                    :active="route().current('dokumen.preview.lrlk')"
+                                >
+                                    👁️ Preview LRLK
+                                </NavLink>
+                            </template>
 
-                            <NavLink
-                                v-if="userRole === 'karyawan'"
-                                :href="route('lembur.riwayat')"
-                                :active="route().current('lembur.riwayat')"
-                            >
-                                Riwayat Lembur
-                            </NavLink>
+                            <!-- ===== MENU OPERATOR LAPANGAN (Admin / Mandor / Karyawan) ===== -->
+                            <template v-else>
+                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                                    SPL
+                                </NavLink>
 
-                            <NavLink
-                                v-if="userRole === 'admin'"
-                                :href="route('admin.karyawan')"
-                                :active="route().current('admin.karyawan')"
-                            >
-                                Kelola Karyawan
-                            </NavLink>
+                                <NavLink
+                                    v-if="userRole !== 'karyawan'"
+                                    :href="route('lembur.lrlk')"
+                                    :active="route().current('lembur.lrlk') || route().current('lembur.lrlk.print')"
+                                >
+                                    LRLK (Realisasi)
+                                </NavLink>
 
-                            <NavLink
-                                v-if="userRole === 'admin'"
-                                :href="route('admin.stasiun')"
-                                :active="route().current('admin.stasiun')"
-                            >
-                                Kelola Stasiun
-                            </NavLink>
+                                <!-- Khusus Mandor: Buat SPL -->
+                                <NavLink
+                                    v-if="userRole === 'mandor'"
+                                    :href="route('lembur.create')"
+                                    :active="route().current('lembur.create')"
+                                >
+                                    Buat SPL
+                                </NavLink>
 
-                            <NavLink
-                                v-if="userRole !== 'karyawan'"
-                                :href="route('lembur.print')"
-                                :active="route().current('lembur.print')"
-                            >
-                                Cetak SPL
-                            </NavLink>
+                                <NavLink
+                                    v-if="userRole === 'karyawan'"
+                                    :href="route('lembur.riwayat')"
+                                    :active="route().current('lembur.riwayat')"
+                                >
+                                    Riwayat Lembur
+                                </NavLink>
 
-                            <NavLink
-                                v-if="userRole !== 'karyawan'"
-                                :href="route('lembur.lrlk')"
-                                :active="route().current('lembur.lrlk') || route().current('lembur.lrlk.print')"
-                            >
-                                LRLK (Realisasi)
-                            </NavLink>
+                                <NavLink
+                                    v-if="userRole === 'admin'"
+                                    :href="route('admin.karyawan')"
+                                    :active="route().current('admin.karyawan')"
+                                >
+                                    Kelola Akun
+                                </NavLink>
 
-                            <a
-                                href="/panduan"
-                                target="_blank"
-                                class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-                            >
-                                Panduan
-                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                            </a>
+                                <NavLink
+                                    v-if="userRole === 'admin'"
+                                    :href="route('admin.stasiun')"
+                                    :active="route().current('admin.stasiun')"
+                                >
+                                    Kelola Stasiun
+                                </NavLink>
+
+                                <!-- Cetak: khusus admin -->
+                                <NavLink
+                                    v-if="userRole === 'admin'"
+                                    :href="route('lembur.print')"
+                                    :active="route().current('lembur.print')"
+                                >
+                                    Cetak
+                                </NavLink>
+
+                                <a
+                                    href="/panduan"
+                                    target="_blank"
+                                    class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                                >
+                                    Panduan
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                </a>
+                            </template>
                         </div>
                     </div>
 
@@ -184,14 +221,23 @@ async function logout() {
             <!-- Responsive Navigation Menu -->
             <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="border-t border-slate-100 sm:hidden">
                 <div class="space-y-1 px-3 py-3">
-                    <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">Dashboard</ResponsiveNavLink>
-                    <ResponsiveNavLink v-if="userRole === 'mandor'" :href="route('lembur.create')" :active="route().current('lembur.create')">Buat SPL</ResponsiveNavLink>
-                    <ResponsiveNavLink v-if="userRole === 'karyawan'" :href="route('lembur.riwayat')" :active="route().current('lembur.riwayat')">Riwayat Lembur</ResponsiveNavLink>
-                    <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.karyawan')" :active="route().current('admin.karyawan')">Kelola Karyawan</ResponsiveNavLink>
-                    <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.stasiun')" :active="route().current('admin.stasiun')">Kelola Stasiun</ResponsiveNavLink>
-                    <ResponsiveNavLink v-if="userRole !== 'karyawan'" :href="route('lembur.print')" :active="route().current('lembur.print')">Cetak SPL</ResponsiveNavLink>
-                    <ResponsiveNavLink v-if="userRole !== 'karyawan'" :href="route('lembur.lrlk')" :active="route().current('lembur.lrlk') || route().current('lembur.lrlk.print')">LRLK (Realisasi)</ResponsiveNavLink>
-                    <a href="/panduan" target="_blank" class="block rounded-lg px-3 py-2 text-base font-medium text-slate-600 hover:bg-slate-50">Panduan ↗</a>
+                    <!-- Penandatangan: hanya SPL & LRLK -->
+                    <template v-if="isPenandatangan">
+                        <ResponsiveNavLink :href="route('dokumen.index')" :active="route().current('dokumen.index')">📋 SPL &amp; LRLK</ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('dokumen.preview.spl')" :active="route().current('dokumen.preview.spl')">👁️ Preview SPL</ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('dokumen.preview.lrlk')" :active="route().current('dokumen.preview.lrlk')">👁️ Preview LRLK</ResponsiveNavLink>
+                    </template>
+                    <!-- Operator lapangan -->
+                    <template v-else>
+                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">SPL</ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="userRole !== 'karyawan'" :href="route('lembur.lrlk')" :active="route().current('lembur.lrlk') || route().current('lembur.lrlk.print')">LRLK (Realisasi)</ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="userRole === 'mandor'" :href="route('lembur.create')" :active="route().current('lembur.create')">Buat SPL</ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="userRole === 'karyawan'" :href="route('lembur.riwayat')" :active="route().current('lembur.riwayat')">Riwayat Lembur</ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.karyawan')" :active="route().current('admin.karyawan')">Kelola Akun</ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.stasiun')" :active="route().current('admin.stasiun')">Kelola Stasiun</ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('lembur.print')" :active="route().current('lembur.print')">Cetak</ResponsiveNavLink>
+                        <a href="/panduan" target="_blank" class="block rounded-lg px-3 py-2 text-base font-medium text-slate-600 hover:bg-slate-50">Panduan ↗</a>
+                    </template>
                 </div>
 
                 <div class="border-t border-slate-100 px-4 py-4">

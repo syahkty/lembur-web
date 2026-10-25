@@ -126,6 +126,14 @@ function formatTanggalIndo(tgl) {
                     >
                         <span>📑</span> LRLK (Realisasi)
                     </Link>
+
+                    <Link
+                        v-if="userRole === 'admin'"
+                        :href="route('lembur.print', { tanggal: selectedTanggal })"
+                        class="bg-emerald-700 text-white px-4 py-2 rounded-xl hover:bg-emerald-800 text-xs font-bold transition shadow-sm shadow-emerald-700/20 flex items-center gap-1.5"
+                    >
+                        <span>🖨️</span> Cetak SPL
+                    </Link>
                 </div>
             </div>
         </template>

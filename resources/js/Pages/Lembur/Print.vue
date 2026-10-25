@@ -6,12 +6,22 @@ const props = defineProps({
     lemburs: Array,
     tanggal: String,
     userRole: String,
+    docSignatures: {
+        type: Object,
+        default: () => ({}),
+    },
+    // true = mode preview untuk penandatangan (tanpa opsi cetak)
+    previewMode: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const selectedTanggal = ref(props.tanggal);
 
 function filterTanggal() {
-    router.get(route('lembur.print'), { tanggal: selectedTanggal.value }, { preserveState: true });
+    const target = props.previewMode ? 'dokumen.preview.spl' : 'lembur.print';
+    router.get(route(target), { tanggal: selectedTanggal.value }, { preserveState: true });
 }
 
 function cetakDokumen() {
@@ -50,7 +60,7 @@ const paddedLemburs = computed(() => {
 </script>
 
 <template>
-    <Head title="Cetak Surat Perintah Kerja Lembur (SPL)" />
+    <Head :title="previewMode ? 'Preview Surat Perintah Kerja Lembur (SPL)' : 'Cetak Surat Perintah Kerja Lembur (SPL)'" />
 
     <!-- Floating Action Toolbar (Hanya melayang di layar, 100% hilang saat dicetak) -->
     <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 text-xs">
@@ -63,22 +73,42 @@ const paddedLemburs = computed(() => {
                 class="bg-slate-800 text-white text-xs border border-slate-600 rounded px-2 py-1 focus:ring-1 focus:ring-emerald-400"
             />
         </div>
-        <a :href="route('dashboard')" class="text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition font-medium">
-            ← Dashboard
-        </a>
-        <a :href="route('lembur.lrlk.print', { tanggal: selectedTanggal })" class="text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-slate-800 transition font-bold">
-            📊 Cetak LRLK
-        </a>
-        <button
-            @click="cetakDokumen"
-            class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-full font-bold shadow transition flex items-center gap-1.5"
-        >
-            <span>🖨️</span> Cetak SPL
-        </button>
+        <!-- Mode Preview (Penandatangan): tanpa tombol cetak -->
+        <template v-if="previewMode">
+            <a :href="route('dokumen.index', { tanggal: selectedTanggal })" class="text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition font-medium">
+                ← Kembali
+            </a>
+            <a :href="route('dokumen.preview.lrlk', { tanggal: selectedTanggal })" class="text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-slate-800 transition font-bold">
+                📊 Preview LRLK
+            </a>
+            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full font-bold">
+                👁️ Mode Preview
+            </span>
+        </template>
+
+        <!-- Mode Cetak (Admin) -->
+        <template v-else>
+            <a :href="route('dashboard')" class="text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition font-medium">
+                ← Dashboard
+            </a>
+            <a :href="route('lembur.lrlk.print', { tanggal: selectedTanggal })" class="text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded hover:bg-slate-800 transition font-bold">
+                📊 Cetak LRLK
+            </a>
+            <button
+                @click="cetakDokumen"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-full font-bold shadow transition flex items-center gap-1.5"
+            >
+                <span>🖨️</span> Cetak
+            </button>
+        </template>
     </div>
 
     <!-- Tampilan Murni Kertas Lembur Sesuai Foto Fisik PROS-HCM-02 -->
-    <div class="paper-wrapper min-h-screen bg-slate-200 py-6 px-4 print:p-0 print:m-0 print:bg-white flex justify-center">
+    <!-- Mode preview: kertas disembunyikan saat Ctrl+P agar tidak bisa dicetak -->
+    <div
+        class="paper-wrapper min-h-screen bg-slate-200 py-6 px-4 print:p-0 print:m-0 print:bg-white flex justify-center"
+        :class="{ 'preview-locked': previewMode }"
+    >
         <div class="print-area bg-white w-full max-w-[210mm] p-6 shadow-xl print:shadow-none print:p-0 print:w-full print:max-w-none text-black box-border" style="font-family: Arial, Helvetica, sans-serif;">
 
             <!-- Header & Nomor Form PROS-HCM-02 -->
@@ -145,7 +175,7 @@ const paddedLemburs = computed(() => {
                         </td>
 
                         <!-- Nama Karyawan -->
-                        <td class="border border-black px-1.5 py-0 uppercase truncate max-w-[140px] font-semibold text-[10px]">
+                        <td class="border border-black px-1.5 py-0 uppercase truncate max-w-[140px] text-[10px]">
                             {{ lembur.user?.name || '' }}
                         </td>
 
@@ -233,8 +263,22 @@ const paddedLemburs = computed(() => {
                         </thead>
                         <tbody>
                             <tr class="h-12">
-                                <td class="border border-black"></td>
-                                <td class="border border-black"></td>
+                                <td class="border border-black relative">
+                                    <img
+                                        v-if="docSignatures?.askep?.tanda_tangan"
+                                        :src="docSignatures.askep.tanda_tangan"
+                                        alt="TTD Askep"
+                                        class="absolute inset-0 max-h-10 max-w-full object-contain m-auto"
+                                    />
+                                </td>
+                                <td class="border border-black relative">
+                                    <img
+                                        v-if="docSignatures?.asisten?.tanda_tangan"
+                                        :src="docSignatures.asisten.tanda_tangan"
+                                        alt="TTD Asisten"
+                                        class="absolute inset-0 max-h-10 max-w-full object-contain m-auto"
+                                    />
+                                </td>
                             </tr>
                             <tr>
                                 <td class="border border-black px-1 py-0.5 text-[9.5px]">Askep</td>
@@ -282,6 +326,11 @@ const paddedLemburs = computed(() => {
         padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
+    }
+
+    /* Mode preview penandatangan: dokumen tidak boleh dicetak */
+    .paper-wrapper.preview-locked {
+        display: none !important;
     }
 
     /* Pengaturan kertas A4 Portrait */

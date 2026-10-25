@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -12,6 +12,9 @@ const props = defineProps({
 });
 
 const selectedTanggal = ref(props.tanggal);
+
+// Cetak SPL & LRLK hanya untuk admin
+const isAdmin = computed(() => usePage().props.auth?.user?.role === 'admin');
 
 function filterTanggal() {
     router.get(route('lembur.lrlk'), { tanggal: selectedTanggal.value }, { preserveState: true });
@@ -64,18 +67,20 @@ function formatTanggalIndo(tgl) {
                     </div>
 
                     <Link
-                        :href="route('lembur.print', { tanggal: selectedTanggal })"
-                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition shadow-sm"
+                        :href="route('dashboard', { tanggal: selectedTanggal })"
+                        class="bg-white text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 text-xs font-semibold transition shadow-sm flex items-center gap-1.5"
                     >
-                        <span>📄</span> Cetak SPL
+                        <span>📄</span> Kembali ke SPL
                     </Link>
 
-                    <Link
-                        :href="route('lembur.lrlk.print', { tanggal: selectedTanggal })"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-700 rounded-xl hover:bg-emerald-800 transition shadow-sm shadow-emerald-700/20"
-                    >
-                        <span>🖨️</span> Cetak LRLK (A4 Sesuai Foto)
-                    </Link>
+                    <template v-if="isAdmin">
+                        <Link
+                            :href="route('lembur.lrlk.print', { tanggal: selectedTanggal })"
+                            class="bg-emerald-700 text-white px-4 py-2 rounded-xl hover:bg-emerald-800 text-xs font-bold transition shadow-sm shadow-emerald-700/20 flex items-center gap-1.5"
+                        >
+                            <span>🖨️</span> Cetak LRLK
+                        </Link>
+                    </template>
                 </div>
             </div>
         </template>
@@ -116,13 +121,6 @@ function formatTanggalIndo(tgl) {
                     </div>
                 </div>
 
-                <!-- Info Banner Auto-fill -->
-                <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
-                    <span class="text-emerald-700 text-lg leading-none">💡</span>
-                    <div class="text-xs text-emerald-900 leading-relaxed">
-                        <strong>Format Realisasi LRLK:</strong> Kolom No. Employe, Nama, Dept, Tgl, Jenis Pekerjaan, dan Jml Jam Dibayar (sesuai jam nyata tanpa pengali) terisi otomatis dari data SPL. Kolom Jumlah (Rp) dikosongkan sesuai blangko fisik PROS-HCM-02.
-                    </div>
-                </div>
 
                 <!-- Tabel LRLK -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

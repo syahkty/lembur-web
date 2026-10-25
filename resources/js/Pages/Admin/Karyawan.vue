@@ -69,10 +69,14 @@ const computedUpahSejam = computed(() => {
     return computedTotalDasarUpah.value > 0 ? Math.round(computedTotalDasarUpah.value / 173) : 0;
 });
 
-// Hitung jumlah karyawan per shift
+const signerRoles = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
+const isSignerRole = computed(() => signerRoles.includes(form.role));
+
+// Hitung jumlah karyawan per shift & penandatangan
 const countShift1 = computed(() => props.karyawanList.filter(k => k.role === 'karyawan' && k.shift == 1).length);
 const countShift2 = computed(() => props.karyawanList.filter(k => k.role === 'karyawan' && k.shift == 2).length);
 const countNoShift = computed(() => props.karyawanList.filter(k => k.role === 'karyawan' && !k.shift).length);
+const countSigner = computed(() => props.karyawanList.filter(k => signerRoles.includes(k.role)).length);
 const countAll = computed(() => props.karyawanList.length);
 
 // Filter karyawan berdasarkan tab & pencarian
@@ -85,6 +89,8 @@ const filteredList = computed(() => {
         list = list.filter(k => k.role === 'karyawan' && k.shift == 2);
     } else if (activeTab.value === 'none') {
         list = list.filter(k => k.role === 'karyawan' && !k.shift);
+    } else if (activeTab.value === 'signer') {
+        list = list.filter(k => signerRoles.includes(k.role));
     }
 
     if (searchQuery.value) {
@@ -92,7 +98,8 @@ const filteredList = computed(() => {
         list = list.filter(k =>
             k.name.toLowerCase().includes(q) ||
             (k.no_employe && k.no_employe.toLowerCase().includes(q)) ||
-            (k.stasiun?.nama && k.stasiun.nama.toLowerCase().includes(q))
+            (k.stasiun?.nama && k.stasiun.nama.toLowerCase().includes(q)) ||
+            (k.role && k.role.toLowerCase().includes(q))
         );
     }
 
@@ -109,7 +116,7 @@ function ubahShiftLangsung(karyawan, targetShift) {
     });
 }
 
-// Buka Modal Tambah Karyawan (otomatis set shift sesuai tab aktif)
+// Buka Modal Tambah Karyawan (otomatis set shift / role sesuai tab aktif)
 function openCreate() {
     editMode.value = false;
     editId.value = null;
@@ -119,13 +126,25 @@ function openCreate() {
     form.harga_beras_per_kg = 14000;
     form.clearErrors();
 
-    // Set default shift sesuai tab yang sedang dibuka
+    // Set default shift / role sesuai tab yang sedang dibuka
     if (activeTab.value === 1 || activeTab.value === 2) {
+        form.role = 'karyawan';
         form.shift = activeTab.value;
         const matchedMandor = props.mandors.find(m => m.shift == activeTab.value);
         if (matchedMandor) {
             form.mandor_id = matchedMandor.id;
         }
+    } else if (activeTab.value === 'signer') {
+        form.role = 'asisten';
+        form.shift = '';
+        form.mandor_id = '';
+        form.stasiun_id = '';
+        form.gaji_pokok = '';
+        form.jatah_beras_kg = 0;
+        form.harga_beras_per_kg = 0;
+        form.tarif_lembur_per_jam = '';
+    } else {
+        form.role = 'karyawan';
     }
 
     showModal.value = true;
@@ -145,8 +164,8 @@ function openEdit(karyawan) {
     form.mandor_id = karyawan.mandor_id || '';
     form.gaji_pokok = karyawan.gaji_pokok || '';
     form.status_pernikahan = karyawan.status_pernikahan || 'TK';
-    form.jatah_beras_kg = (karyawan.jatah_beras_kg !== null && karyawan.jatah_beras_kg !== undefined) ? karyawan.jatah_beras_kg : 15;
-    form.harga_beras_per_kg = (karyawan.harga_beras_per_kg !== null && karyawan.harga_beras_per_kg !== undefined) ? karyawan.harga_beras_per_kg : 14000;
+    form.jatah_beras_kg = (karyawan.jatah_beras_kg !== null && karyawan.jatah_beras_kg !== undefined) ? karyawan.jatah_beras_kg : (signerRoles.includes(karyawan.role) ? 0 : 15);
+    form.harga_beras_per_kg = (karyawan.harga_beras_per_kg !== null && karyawan.harga_beras_per_kg !== undefined) ? karyawan.harga_beras_per_kg : (signerRoles.includes(karyawan.role) ? 0 : 14000);
     form.tarif_lembur_per_jam = karyawan.tarif_lembur_per_jam || '';
     form.clearErrors();
     showModal.value = true;
@@ -163,6 +182,17 @@ function onModalShiftChange() {
 }
 
 function submit() {
+    if (isSignerRole.value) {
+        form.stasiun_id = '';
+        form.shift = '';
+        form.mandor_id = '';
+        form.gaji_pokok = 0;
+        form.status_pernikahan = 'TK';
+        form.jatah_beras_kg = 0;
+        form.harga_beras_per_kg = 0;
+        form.tarif_lembur_per_jam = 0;
+    }
+
     if (editMode.value) {
         form.patch(route('admin.karyawan.update', editId.value), {
             onSuccess: () => { showModal.value = false; },
@@ -189,6 +219,11 @@ function roleBadgeClass(role) {
         'bg-purple-100 text-purple-700': role === 'admin',
         'bg-blue-100 text-blue-700': role === 'mandor',
         'bg-green-100 text-green-700': role === 'karyawan',
+        'bg-sky-100 text-sky-700': role === 'asisten',
+        'bg-indigo-100 text-indigo-700': role === 'askep',
+        'bg-violet-100 text-violet-700': role === 'ktu',
+        'bg-emerald-100 text-emerald-700': role === 'administratur',
+        'bg-rose-100 text-rose-700': role === 'hrga',
     };
 }
 </script>
@@ -210,7 +245,7 @@ function roleBadgeClass(role) {
                     @click="openCreate"
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-xs font-bold transition shadow flex items-center gap-1.5 self-start sm:self-auto"
                 >
-                    <span>+</span> Tambah Karyawan
+                    <span>+</span> Tambah Akun
                 </button>
             </div>
         </template>
@@ -269,6 +304,22 @@ function roleBadgeClass(role) {
                             </span>
                         </button>
 
+                        <!-- Tab Penandatangan Dokumen -->
+                        <button
+                            type="button"
+                            @click="activeTab = 'signer'"
+                            class="px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                            :class="activeTab === 'signer' ? 'bg-sky-700 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'"
+                        >
+                            <span>✍️ Penandatangan Dokumen</span>
+                            <span
+                                class="px-1.5 py-0.2 rounded-full text-[10px]"
+                                :class="activeTab === 'signer' ? 'bg-sky-800 text-white' : 'bg-gray-200 text-gray-700'"
+                            >
+                                {{ countSigner }}
+                            </span>
+                        </button>
+
                         <!-- Tab Semua Karyawan -->
                         <button
                             type="button"
@@ -312,6 +363,19 @@ function roleBadgeClass(role) {
                     </div>
                 </div>
 
+                <!-- Info Banner Penandatangan Dokumen -->
+                <div
+                    v-if="activeTab === 'signer'"
+                    class="p-3 rounded-lg border text-xs flex items-center justify-between bg-sky-50/80 border-sky-200 text-sky-950"
+                >
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">✍️</span>
+                        <span>
+                            Menampilkan seluruh akun <strong>Penandatangan Dokumen</strong> (Asisten, Askep, KTU, Administratur, HRGA). Akun ini khusus digunakan untuk verifikasi dan menandatangani dokumen SPL & LRLK secara digital.
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Tabel Data Karyawan -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="overflow-x-auto">
@@ -336,14 +400,15 @@ function roleBadgeClass(role) {
                                     <td class="px-3 py-2.5 font-bold text-gray-900">
                                         <div class="flex items-center gap-1.5">
                                             <span>{{ k.name }}</span>
-                                            <span v-if="k.role !== 'karyawan'" class="text-[10px] px-1.5 py-0.2 rounded" :class="roleBadgeClass(k.role)">
+                                            <span v-if="k.role !== 'karyawan'" class="text-[10px] px-1.5 py-0.2 rounded font-semibold" :class="roleBadgeClass(k.role)">
                                                 {{ k.role }}
                                             </span>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2.5 text-gray-600 font-mono text-[11px]">{{ k.email }}</td>
                                     <td class="px-3 py-2.5">
-                                        <span v-if="k.stasiun" class="bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium">
+                                        <span v-if="signerRoles.includes(k.role)" class="text-gray-400 font-mono text-[11px]">—</span>
+                                        <span v-else-if="k.stasiun" class="bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium">
                                             {{ k.stasiun.nama }}
                                         </span>
                                         <span v-else class="text-gray-400 italic">- Belum diatur -</span>
@@ -351,7 +416,8 @@ function roleBadgeClass(role) {
 
                                     <!-- Upah & Tarif Lembur -->
                                     <td class="px-3 py-2.5">
-                                        <div v-if="k.gaji_pokok || k.tarif_lembur_per_jam">
+                                        <span v-if="signerRoles.includes(k.role)" class="text-gray-400 font-mono text-[11px]">—</span>
+                                        <div v-else-if="k.gaji_pokok || k.tarif_lembur_per_jam">
                                             <div class="font-bold text-slate-900 text-[11px]">
                                                 Rp {{ Math.round(k.upah_sejam || 0).toLocaleString('id-ID') }}/jam
                                             </div>
@@ -383,14 +449,15 @@ function roleBadgeClass(role) {
                                                 <option value="2">🟢 Shift 2 (Mandor B)</option>
                                             </select>
                                         </div>
-                                        <div v-else class="text-gray-400 italic">
-                                            -
+                                        <div v-else class="text-gray-400 font-mono text-center">
+                                            —
                                         </div>
                                     </td>
 
                                     <!-- Mandor -->
                                     <td class="px-3 py-2.5 text-gray-700">
-                                        <span v-if="k.mandor_user" class="font-medium text-gray-800">
+                                        <span v-if="signerRoles.includes(k.role)" class="text-gray-400 font-mono text-[11px]">—</span>
+                                        <span v-else-if="k.mandor_user" class="font-medium text-gray-800">
                                             {{ k.mandor_user.name }}
                                         </span>
                                         <span v-else class="text-gray-400 italic">-</span>
@@ -432,7 +499,7 @@ function roleBadgeClass(role) {
             <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b">
                     <h3 class="text-base font-bold text-gray-900">
-                        {{ editMode ? 'Edit Data Karyawan' : 'Tambah Karyawan Baru' }}
+                        {{ editMode ? 'Edit Data User' : (isSignerRole ? 'Tambah Akun Penandatangan Dokumen' : 'Tambah Karyawan Baru') }}
                     </h3>
                     <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 text-lg font-bold">
                         ✕
@@ -446,7 +513,7 @@ function roleBadgeClass(role) {
                             type="text"
                             v-model="form.name"
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs"
-                            placeholder="Nama karyawan..."
+                            placeholder="Nama lengkap..."
                             required
                         >
                         <p v-if="form.errors.name" class="text-red-500 text-[11px] mt-1">{{ form.errors.name }}</p>
@@ -466,11 +533,20 @@ function roleBadgeClass(role) {
                             <label class="block font-medium text-gray-700 mb-1">Role Akun</label>
                             <select
                                 v-model="form.role"
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs"
+                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-xs font-medium"
                             >
-                                <option value="karyawan">Karyawan</option>
-                                <option value="mandor">Mandor</option>
-                                <option value="admin">Admin</option>
+                                <optgroup label="Operator Lapangan">
+                                    <option value="karyawan">👷 Karyawan</option>
+                                    <option value="mandor">🔧 Mandor</option>
+                                    <option value="admin">🛡️ Admin</option>
+                                </optgroup>
+                                <optgroup label="Penandatangan Dokumen">
+                                    <option value="asisten">📋 Asisten</option>
+                                    <option value="askep">📌 Asisten Kepala (Askep)</option>
+                                    <option value="ktu">🗂️ KTU</option>
+                                    <option value="administratur">🏛️ Administratur</option>
+                                    <option value="hrga">👔 Staff HRGA</option>
+                                </optgroup>
                             </select>
                         </div>
                     </div>
@@ -501,7 +577,8 @@ function roleBadgeClass(role) {
                         <p v-if="form.errors.password" class="text-red-500 text-[11px] mt-1">{{ form.errors.password }}</p>
                     </div>
 
-                    <div>
+
+                    <div v-if="!isSignerRole">
                         <label class="block font-medium text-gray-700 mb-1">Stasiun Pabrik</label>
                         <select
                             v-model="form.stasiun_id"
@@ -513,7 +590,7 @@ function roleBadgeClass(role) {
                     </div>
 
                     <!-- Pembagian Shift & Mandor -->
-                    <div class="bg-gray-50 border p-3 rounded-lg space-y-3">
+                    <div v-if="!isSignerRole" class="bg-gray-50 border p-3 rounded-lg space-y-3">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block font-bold text-gray-800 mb-1">Shift Kerja</label>
@@ -547,7 +624,7 @@ function roleBadgeClass(role) {
                     </div>
 
                     <!-- Variabel Upah Lembur Karyawan (PT Letawa & PP 35/2021) -->
-                    <div class="bg-emerald-50/70 border border-emerald-200 p-3.5 rounded-xl space-y-3">
+                    <div v-if="!isSignerRole" class="bg-emerald-50/70 border border-emerald-200 p-3.5 rounded-xl space-y-3">
                         <div class="font-bold text-emerald-950 text-xs flex items-center justify-between">
                             <span class="flex items-center gap-1.5">🌾 Komponen Upah & Catu Beras (PT Letawa)</span>
                             <span class="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded font-bold">PP 35/2021</span>
@@ -655,7 +732,7 @@ function roleBadgeClass(role) {
                             class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 font-bold text-xs shadow transition"
                             :disabled="form.processing"
                         >
-                            {{ editMode ? 'Simpan Perubahan' : 'Tambah Karyawan' }}
+                            {{ editMode ? 'Simpan Perubahan' : (isSignerRole ? 'Tambah Akun Penandatangan' : 'Tambah Karyawan') }}
                         </button>
                     </div>
                 </form>
