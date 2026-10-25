@@ -49,17 +49,18 @@ Route::middleware('auth')->group(function () {
 
     // ===== KHUSUS ADMINISTRATOR =====
     Route::middleware('role:admin')->group(function () {
-        Route::get('/admin', fn () => redirect()->route('admin.karyawan'))->name('admin');
+        Route::get('/admin', fn () => redirect()->route('admin.akun'))->name('admin');
 
         // Cetak Dokumen SPL & LRLK (khusus admin)
         Route::get('/lembur/print', [LemburController::class, 'print'])->name('lembur.print');
         Route::get('/lembur/lrlk/print', [LemburController::class, 'printLrlk'])->name('lembur.lrlk.print');
 
-        // Admin: Kelola Karyawan
-        Route::get('/admin/karyawan', [KaryawanController::class, 'index'])->name('admin.karyawan');
-        Route::post('/admin/karyawan', [KaryawanController::class, 'store'])->name('admin.karyawan.store');
-        Route::patch('/admin/karyawan/{user}', [KaryawanController::class, 'update'])->name('admin.karyawan.update');
-        Route::delete('/admin/karyawan/{user}', [KaryawanController::class, 'destroy'])->name('admin.karyawan.destroy');
+        // Admin: Kelola Akun
+        Route::get('/admin/akun', [KaryawanController::class, 'index'])->name('admin.akun');
+        Route::post('/admin/akun', [KaryawanController::class, 'store'])->name('admin.akun.store');
+        Route::patch('/admin/akun/{user}', [KaryawanController::class, 'update'])->name('admin.akun.update');
+        Route::delete('/admin/akun/{user}', [KaryawanController::class, 'destroy'])->name('admin.akun.destroy');
+        Route::redirect('/admin/karyawan', '/admin/akun');
 
         // Admin: Kelola Stasiun
         Route::get('/admin/stasiun', [StasiunController::class, 'index'])->name('admin.stasiun');

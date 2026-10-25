@@ -132,8 +132,8 @@ async function logout() {
 
                                 <NavLink
                                     v-if="userRole === 'admin'"
-                                    :href="route('admin.karyawan')"
-                                    :active="route().current('admin.karyawan')"
+                                    :href="route('admin.akun')"
+                                    :active="route().current('admin.akun')"
                                 >
                                     Kelola Akun
                                 </NavLink>
@@ -233,7 +233,7 @@ async function logout() {
                         <ResponsiveNavLink v-if="userRole !== 'karyawan'" :href="route('lembur.lrlk')" :active="route().current('lembur.lrlk') || route().current('lembur.lrlk.print')">LRLK (Realisasi)</ResponsiveNavLink>
                         <ResponsiveNavLink v-if="userRole === 'mandor'" :href="route('lembur.create')" :active="route().current('lembur.create')">Buat SPL</ResponsiveNavLink>
                         <ResponsiveNavLink v-if="userRole === 'karyawan'" :href="route('lembur.riwayat')" :active="route().current('lembur.riwayat')">Riwayat Lembur</ResponsiveNavLink>
-                        <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.karyawan')" :active="route().current('admin.karyawan')">Kelola Akun</ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.akun')" :active="route().current('admin.akun')">Kelola Akun</ResponsiveNavLink>
                         <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.stasiun')" :active="route().current('admin.stasiun')">Kelola Stasiun</ResponsiveNavLink>
                         <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('lembur.print')" :active="route().current('lembur.print')">Cetak</ResponsiveNavLink>
                         <a href="/panduan" target="_blank" class="block rounded-lg px-3 py-2 text-base font-medium text-slate-600 hover:bg-slate-50">Panduan ↗</a>

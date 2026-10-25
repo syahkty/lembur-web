@@ -109,7 +109,7 @@ const filteredList = computed(() => {
 // Ubah shift karyawan secara langsung dari tabel
 function ubahShiftLangsung(karyawan, targetShift) {
     const shiftVal = targetShift ? Number(targetShift) : null;
-    router.patch(route('admin.karyawan.update', karyawan.id), {
+    router.patch(route('admin.akun.update', karyawan.id), {
         shift: shiftVal,
     }, {
         preserveScroll: true,
@@ -194,11 +194,11 @@ function submit() {
     }
 
     if (editMode.value) {
-        form.patch(route('admin.karyawan.update', editId.value), {
+        form.patch(route('admin.akun.update', editId.value), {
             onSuccess: () => { showModal.value = false; },
         });
     } else {
-        form.post(route('admin.karyawan.store'), {
+        form.post(route('admin.akun.store'), {
             onSuccess: () => { showModal.value = false; },
         });
     }
@@ -211,7 +211,7 @@ async function hapus(id) {
         confirmText: 'Ya, hapus',
         danger: true,
     });
-    if (ok) router.delete(route('admin.karyawan.destroy', id));
+    if (ok) router.delete(route('admin.akun.destroy', id));
 }
 
 function roleBadgeClass(role) {
