@@ -6,16 +6,17 @@ use App\Models\User;
 use App\Models\Stasiun;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         $this->call(StasiunSeeder::class);
+        $this->call(PenandatanganSeeder::class);
         $stations = Stasiun::all();
 
-        $faker = Faker::create('id_ID');
+        $hasFaker = class_exists('Faker\Factory');
+        $faker = $hasFaker ? \Faker\Factory::create('id_ID') : null;
 
         // 1. Buat Admin
         User::firstOrCreate(
@@ -56,7 +57,7 @@ class DatabaseSeeder extends Seeder
             User::updateOrCreate(
                 ['email' => "karyawan.a{$i}@letawa.com"],
                 [
-                    'name' => $faker->name,
+                    'name' => $faker ? $faker->name : "Karyawan Shift 1 #{$i}",
                     'password' => Hash::make('password'),
                     'role' => 'karyawan',
                     'mandor_id' => $mandor1->id,
@@ -73,42 +74,13 @@ class DatabaseSeeder extends Seeder
             User::updateOrCreate(
                 ['email' => "karyawan.b{$i}@letawa.com"],
                 [
-                    'name' => $faker->name,
+                    'name' => $faker ? $faker->name : "Karyawan Shift 2 #{$i}",
                     'password' => Hash::make('password'),
                     'role' => 'karyawan',
                     'mandor_id' => $mandor2->id,
                     'shift' => 2,
                     'stasiun_id' => $stasiun->id,
                     'no_employe' => $sampleCodes[$i + 9] ?? (string)(300000 + $i),
-                ]
-            );
-        }
-
-        // 5. Buat 5 Akun Penandatangan Dokumen
-        $signers = [
-            ['name' => 'Bapak Asisten', 'email' => 'asisten@letawa.com', 'role' => 'asisten', 'no_employe' => '101001'],
-            ['name' => 'Bapak Asisten Kepala (Askep)', 'email' => 'askep@letawa.com', 'role' => 'askep', 'no_employe' => '101002'],
-            ['name' => 'Bapak KTU (Kepala Tata Usaha)', 'email' => 'ktu@letawa.com', 'role' => 'ktu', 'no_employe' => '101003'],
-            ['name' => 'Bapak Administratur', 'email' => 'administratur@letawa.com', 'role' => 'administratur', 'no_employe' => '101004'],
-            ['name' => 'Staff HRGA', 'email' => 'hrga@letawa.com', 'role' => 'hrga', 'no_employe' => '101005'],
-        ];
-
-        foreach ($signers as $signer) {
-            User::updateOrCreate(
-                ['email' => $signer['email']],
-                [
-                    'name' => $signer['name'],
-                    'password' => Hash::make('password'),
-                    'role' => $signer['role'],
-                    'no_employe' => $signer['no_employe'],
-                    'stasiun_id' => null,
-                    'shift' => null,
-                    'mandor_id' => null,
-                    'gaji_pokok' => 0,
-                    'status_pernikahan' => 'TK',
-                    'jatah_beras_kg' => 0,
-                    'harga_beras_per_kg' => 0,
-                    'tarif_lembur_per_jam' => 0,
                 ]
             );
         }
