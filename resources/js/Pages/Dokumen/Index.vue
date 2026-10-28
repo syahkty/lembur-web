@@ -2,7 +2,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DocSignatureModal from '@/Components/DocSignatureModal.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     lemburs: Array,
@@ -14,6 +15,10 @@ const props = defineProps({
     userJabatan: String,
     savedSignature: String,
     docSignatures: Object,
+});
+
+onMounted(() => {
+    runTourIfRequested('dokumen', props.userRole);
 });
 
 const selectedTanggal = ref(props.tanggal);
@@ -92,7 +97,7 @@ const roleTheme = computed(() => ({
 
                 <div class="flex items-center gap-2.5 flex-wrap">
                     <!-- Filter Tanggal -->
-                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <div id="tour-dokumen-tanggal" class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
                         <label class="text-xs font-semibold text-slate-600">Tanggal:</label>
                         <input
                             type="date"
@@ -104,6 +109,7 @@ const roleTheme = computed(() => ({
 
                     <!-- Tombol Tanda Tangan -->
                     <button
+                        id="tour-dokumen-ttd-btn"
                         type="button"
                         @click="showSignatureModal = true"
                         :class="[roleTheme.bg, 'text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 hover:opacity-90']"
@@ -120,6 +126,7 @@ const roleTheme = computed(() => ({
 
                 <!-- Status Tanda Tangan -->
                 <div v-if="currentSavedSignature"
+                    id="tour-dokumen-status-ttd"
                     :class="['flex items-center gap-3 px-4 py-3 rounded-2xl border', roleTheme.light, roleTheme.border]"
                 >
                     <div class="flex-shrink-0">
@@ -130,7 +137,10 @@ const roleTheme = computed(() => ({
                         <p class="text-[11px] text-slate-500">Tanda tangan Anda akan muncul di kolom <strong>{{ userJabatan }}</strong> pada dokumen cetak SPL &amp; LRLK.</p>
                     </div>
                 </div>
-                <div v-else class="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-amber-50 border-amber-200">
+                <div v-else
+                    id="tour-dokumen-status-ttd"
+                    class="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-amber-50 border-amber-200"
+                >
                     <span class="text-xl">⚠️</span>
                     <div>
                         <p class="text-xs font-bold text-amber-800">Tanda tangan belum disimpan</p>
@@ -139,7 +149,7 @@ const roleTheme = computed(() => ({
                 </div>
 
                 <!-- Tab Switcher -->
-                <div class="flex bg-slate-100 rounded-2xl p-1 gap-1 w-fit">
+                <div id="tour-dokumen-tabs" class="flex bg-slate-100 rounded-2xl p-1 gap-1 w-fit">
                     <button
                         @click="activeTab = 'spl'"
                         :class="[
@@ -147,7 +157,7 @@ const roleTheme = computed(() => ({
                             activeTab === 'spl' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         ]"
                     >
-                        📋 SPL (Surat Perintah Lembur)
+                        SPL (Surat Perintah Lembur)
                     </button>
                     <button
                         @click="activeTab = 'lrlk'"
@@ -156,12 +166,12 @@ const roleTheme = computed(() => ({
                             activeTab === 'lrlk' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         ]"
                     >
-                        📊 LRLK (Laporan Realisasi)
+                        LRLK (Laporan Realisasi)
                     </button>
                 </div>
 
                 <!-- ==== TAB SPL ==== -->
-                <div v-if="activeTab === 'spl'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div v-if="activeTab === 'spl'" id="tour-dokumen-tabel" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-4 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                         <div>
                             <h3 class="text-sm font-bold text-slate-900">
@@ -174,10 +184,11 @@ const roleTheme = computed(() => ({
                                 {{ lemburs.filter(l => l.status === 'disetujui').length }} Disetujui
                             </span>
                             <a
+                                id="tour-dokumen-preview-btn"
                                 :href="route('dokumen.preview.spl', { tanggal })"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm transition"
                             >
-                                👁️ Preview SPL
+                                Preview SPL
                             </a>
                         </div>
                     </div>

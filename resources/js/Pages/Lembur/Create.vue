@@ -373,21 +373,25 @@ async function submit() {
                         </div>
 
                         <!-- Bulk Preset Jam & Pekerjaan (Desktop & Mobile) -->
-                        <div class="md:col-span-2 bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2.5">
+                        <div id="tour-create-preset" class="md:col-span-2 bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2.5">
                             <!-- Header Preset & Tombol Terapkan -->
                             <div class="flex items-center justify-between flex-wrap gap-2">
                                 <div class="flex items-center gap-1.5">
                                     <span class="text-emerald-700 font-extrabold text-sm">⚡</span>
                                     <span class="text-xs font-extrabold text-slate-800">Form Isi Cepat (Preset Kolektif):</span>
                                 </div>
-                                <button type="button" @click="terapkanPreset"
-                                    class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3.5 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5">
+                                <button
+                                    id="tour-create-apply"
+                                    type="button"
+                                    @click="terapkanPreset"
+                                    class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3.5 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5"
+                                >
                                     <span>⚡</span> Terapkan ke Semua Lembur
                                 </button>
                             </div>
 
                             <!-- Pilihan Shortcut Cepat -->
-                            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
+                            <div id="tour-create-shortcuts" class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider shrink-0">Pilihan Cepat:</span>
                                 <button
                                     v-for="sc in presetShortcuts"
@@ -426,7 +430,7 @@ async function submit() {
                             </div>
 
                             <!-- Toggle & Input Sesi 2 -->
-                            <div class="bg-blue-50/60 p-2.5 rounded-xl border border-blue-200/80 transition-all">
+                            <div id="tour-create-sesi2" class="bg-blue-50/60 p-2.5 rounded-xl border border-blue-200/80 transition-all">
                                 <div class="flex items-center justify-between">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input

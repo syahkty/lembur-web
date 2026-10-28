@@ -19,7 +19,9 @@ const props = defineProps({
 });
 
 onMounted(() => {
-    if (!props.previewMode) {
+    if (props.previewMode) {
+        runTourIfRequested('preview_spl', props.userRole);
+    } else {
         runTourIfRequested('print', 'admin');
     }
 });

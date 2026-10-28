@@ -1,6 +1,7 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     items: Array,
@@ -16,6 +17,12 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+});
+
+onMounted(() => {
+    if (props.previewMode) {
+        runTourIfRequested('preview_lrlk', props.userRole);
+    }
 });
 
 const selectedTanggal = ref(props.tanggal);
@@ -79,7 +86,7 @@ const paddedItems = computed(() => {
     <Head :title="previewMode ? 'Preview LRLK' : 'Cetak LRLK'" />
 
     <!-- Floating Action Toolbar (Hanya muncul di layar, 100% hilang saat cetak/print) -->
-    <div class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 text-xs">
+    <div id="tour-print-lrlk-toolbar" class="no-print fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-slate-700 text-xs">
         <div class="flex items-center gap-2 pr-2 border-r border-slate-700">
             <span class="text-[11px] text-slate-300 font-semibold">Tgl:</span>
             <input
@@ -126,7 +133,7 @@ const paddedItems = computed(() => {
         class="paper-wrapper min-h-screen bg-slate-200 py-6 px-4 print:p-0 print:m-0 print:bg-white flex justify-center"
         :class="{ 'preview-locked': previewMode }"
     >
-        <div class="print-area bg-white w-full max-w-[210mm] p-6 shadow-xl print:shadow-none print:p-0 print:w-full print:max-w-none text-black box-border" style="font-family: Arial, Helvetica, sans-serif;">
+        <div id="tour-print-lrlk-lembar" class="print-area bg-white w-full max-w-[210mm] p-6 shadow-xl print:shadow-none print:p-0 print:w-full print:max-w-none text-black box-border" style="font-family: Arial, Helvetica, sans-serif;">
 
             <!-- Header & Kop Dokumen -->
             <div class="relative mb-2">

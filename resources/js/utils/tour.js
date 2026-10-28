@@ -279,22 +279,54 @@ export function getTourSteps(page, role) {
                     {
                         popover: {
                             title: 'Panduan: Formulir Buat SPL',
-                            description: 'Formulir untuk mengatur penugasan lembur harian atau mencatat status kehadiran (Cuti/HK) anggota regu Anda.'
+                            description: 'Formulir untuk mengatur penugasan lembur harian atau mencatat status kehadiran anggota regu Anda.'
                         }
                     },
                     {
                         element: '#tour-create-tgl',
                         popover: {
                             title: 'Tanggal Lembur',
-                            description: 'Pilih tanggal pelaksanaan tugas lembur regu Anda.',
+                            description: 'Pilih tanggal pelaksanaan kerja lembur untuk regu Anda.',
                             side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-create-preset',
+                        popover: {
+                            title: 'Form Isi Cepat (Preset Kolektif)',
+                            description: 'Fitur untuk mengisi jam lembur dan jenis pekerjaan secara serentak ke semua anggota regu yang lembur, tanpa perlu menginput satu per satu.',
+                            side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-create-shortcuts',
+                        popover: {
+                            title: 'Pilihan Shortcut Cepat',
+                            description: 'Pilihan template jam lembur umum (seperti 16:00-19:00 atau lembur malam 2 sesi). Klik salah satu untuk mengisi form preset secara instan.',
+                            side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-create-sesi2',
+                        popover: {
+                            title: 'Aktivasi Sesi 2 (Lembur Lanjutan)',
+                            description: 'Centang opsi ini jika pekerjaan lembur berlanjut ke sesi malam atau dini hari. Sistem akan menghitung total akumulasi jam secara otomatis.',
+                            side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-create-apply',
+                        popover: {
+                            title: 'Tombol Terapkan ke Semua Lembur',
+                            description: 'Menyalin jam dan pekerjaan dari form isi cepat ini ke seluruh anggota regu yang berstatus lembur dengan satu kali klik.',
+                            side: 'left'
                         }
                     },
                     {
                         element: '#tour-create-tabel',
                         popover: {
-                            title: 'Daftar Anggota Regu',
-                            description: 'Tentukan jam mulai, jam selesai, jenis lembur, serta keterangan tugas masing-masing karyawan.',
+                            title: 'Tabel Anggota Regu & Penyesuaian',
+                            description: 'Periksa atau ubah jam per karyawan jika ada yang berbeda. Untuk anggota yang tidak hadir lembur, pilih status Cuti atau HK (Hari Kerja biasa).',
                             side: 'top'
                         }
                     },
@@ -302,14 +334,14 @@ export function getTourSteps(page, role) {
                         element: '#tour-create-simpan',
                         popover: {
                             title: 'Simpan & Terbitkan SPL',
-                            description: 'Menyimpan instruksi lembur dan mengirimkannya ke akun masing-masing karyawan untuk disetujui (ACC).',
+                            description: 'Menyimpan dan menerbitkan formulir SPL resmi ke sistem agar anggota regu dapat melakukan verifikasi dan ACC tanda tangan.',
                             side: 'top'
                         }
                     },
                     {
                         popover: {
                             title: 'Lanjut ke Halaman LRLK ➔',
-                            description: 'Setelah SPL diterbitkan, Anda dapat memantau realisasinya di halaman LRLK.',
+                            description: 'Penjelasan formulir selesai. Klik tombol di bawah ini untuk melihat pemantauan realisasi lembur di halaman LRLK.',
                             doneBtnText: 'Buka Halaman LRLK ➔',
                             onDoneClick: (el, step, opts) => {
                                 opts.driver.destroy();
@@ -351,6 +383,145 @@ export function getTourSteps(page, role) {
                             onDoneClick: (el, step, opts) => {
                                 opts.driver.destroy();
                                 router.visit(route('dashboard'));
+                            }
+                        }
+                    }
+                ];
+        }
+    } else if (['asisten', 'askep', 'ktu', 'administratur', 'hrga'].includes(role)) {
+        switch (page) {
+            case 'dokumen':
+                return [
+                    {
+                        popover: {
+                            title: 'Panduan: Dokumen Lembur',
+                            description: 'Halaman kerja bagi penandatangan untuk memeriksa instruksi SPL, realisasi LRLK, dan membubuhkan tanda tangan digital.'
+                        }
+                    },
+                    {
+                        element: '#tour-dokumen-tanggal',
+                        popover: {
+                            title: 'Filter Tanggal',
+                            description: 'Pilih tanggal lembur yang ingin diperiksa datanya.',
+                            side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-dokumen-ttd-btn',
+                        popover: {
+                            title: 'Tombol Tanda Tangan',
+                            description: 'Membuka canvas digital untuk membuat atau memperbarui tanda tangan digital Anda.',
+                            side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-dokumen-status-ttd',
+                        popover: {
+                            title: 'Status Tanda Tangan Aktif',
+                            description: 'Menampilkan pratinjau tanda tangan digital Anda yang otomatis terpasang pada lembar cetak fisik SPL & LRLK.',
+                            side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-dokumen-tabs',
+                        popover: {
+                            title: 'Tab Dokumen SPL & LRLK',
+                            description: 'Beralih antara melihat daftar rincian penugasan SPL atau rekapitulasi realisasi jam kerja LRLK.',
+                            side: 'bottom'
+                        }
+                    },
+                    {
+                        element: '#tour-dokumen-tabel',
+                        popover: {
+                            title: 'Tabel Rincian Lembur',
+                            description: 'Memeriksa nama karyawan, stasiun, jenis pekerjaan, durasi jam lembur, dan status persetujuan karyawan.',
+                            side: 'top'
+                        }
+                    },
+                    {
+                        element: '#tour-dokumen-preview-btn',
+                        popover: {
+                            title: 'Lanjut ke Preview SPL ➔',
+                            description: 'Klik tombol di bawah ini untuk melihat pratinjau lembar cetak fisik SPL yang telah dilengkapi tanda tangan digital Anda.',
+                            side: 'left',
+                            doneBtnText: 'Buka Preview SPL ➔',
+                            onDoneClick: (el, step, opts) => {
+                                opts.driver.destroy();
+                                router.visit(route('dokumen.preview.spl', { tour: 'true' }));
+                            }
+                        }
+                    }
+                ];
+
+            case 'preview_spl':
+                return [
+                    {
+                        popover: {
+                            title: 'Panduan: Preview SPL Format Cetak',
+                            description: 'Pratinjau lembar fisik formulir SPL (PROS-HCM-02) berukuran A4 yang siap divalidasi dan diarsipkan.'
+                        }
+                    },
+                    {
+                        element: '#tour-print-toolbar',
+                        popover: {
+                            title: 'Bilah Navigasi Dokumen',
+                            description: 'Bilah alat untuk memilih tanggal dokumen, kembali ke menu utama dokumen, atau beralih ke formulir LRLK.',
+                            side: 'top'
+                        }
+                    },
+                    {
+                        element: '#tour-print-lembar',
+                        popover: {
+                            title: 'Lembar SPL Format Fisik A4',
+                            description: 'Menampilkan format presisi fisik lembar lembur pabrik lengkap dengan 36 baris karyawan dan kolom tanda tangan digital pejabat berwenang.',
+                            side: 'left'
+                        }
+                    },
+                    {
+                        popover: {
+                            title: 'Lanjut ke Preview LRLK ➔',
+                            description: 'Penjelasan Preview SPL selesai. Klik tombol di bawah ini untuk melihat pratinjau lembar Laporan Realisasi Kerja Lembur (LRLK).',
+                            doneBtnText: 'Buka Preview LRLK ➔',
+                            onDoneClick: (el, step, opts) => {
+                                opts.driver.destroy();
+                                router.visit(route('dokumen.preview.lrlk', { tour: 'true' }));
+                            }
+                        }
+                    }
+                ];
+
+            case 'preview_lrlk':
+                return [
+                    {
+                        popover: {
+                            title: 'Panduan: Preview LRLK Format Cetak',
+                            description: 'Pratinjau lembar fisik formulir LRLK (PROS-HCM-02) yang memuat rekapitulasi jam realisasi lembur per stasiun kerja.'
+                        }
+                    },
+                    {
+                        element: '#tour-print-lrlk-toolbar',
+                        popover: {
+                            title: 'Bilah Navigasi LRLK',
+                            description: 'Bilah kontrol untuk mengganti tanggal atau beralih kembali ke formulir SPL.',
+                            side: 'top'
+                        }
+                    },
+                    {
+                        element: '#tour-print-lrlk-lembar',
+                        popover: {
+                            title: 'Lembar LRLK Format Fisik A4',
+                            description: 'Menampilkan rekapitulasi jam realisasi lembur seluruh stasiun serta kolom pengesahan Kabag HRGA, KTU, dan Administratur.',
+                            side: 'left'
+                        }
+                    },
+                    {
+                        popover: {
+                            title: 'Tur Panduan Selesai 🎉',
+                            description: 'Selamat! Anda telah mempelajari seluruh alur peninjauan dan pengesahan dokumen SPL & LRLK di sistem SILEKA.',
+                            doneBtnText: 'Selesai & Ke Dokumen',
+                            onDoneClick: (el, step, opts) => {
+                                opts.driver.destroy();
+                                router.visit(route('dokumen.index'));
                             }
                         }
                     }

@@ -80,23 +80,34 @@ async function logout() {
                             <!-- ===== MENU PENANDATANGAN DOKUMEN (Asisten / Askep / KTU / Administratur / HRGA) ===== -->
                             <template v-if="isPenandatangan">
                                 <NavLink
+                                    id="tour-nav-dokumen"
                                     :href="route('dokumen.index')"
                                     :active="route().current('dokumen.index')"
                                 >
-                                    📋 SPL &amp; LRLK
+                                    SPL &amp; LRLK
                                 </NavLink>
                                 <NavLink
+                                    id="tour-nav-preview-spl"
                                     :href="route('dokumen.preview.spl')"
                                     :active="route().current('dokumen.preview.spl')"
                                 >
-                                    👁️ Preview SPL
+                                    Preview SPL
                                 </NavLink>
                                 <NavLink
+                                    id="tour-nav-preview-lrlk"
                                     :href="route('dokumen.preview.lrlk')"
                                     :active="route().current('dokumen.preview.lrlk')"
                                 >
-                                    👁️ Preview LRLK
+                                    Preview LRLK
                                 </NavLink>
+                                <Link
+                                    id="tour-nav-panduan-penandatangan"
+                                    :href="route('dokumen.index', { tour: 'true' })"
+                                    class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                                >
+                                    Panduan
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </Link>
                             </template>
 
                             <!-- ===== MENU OPERATOR LAPANGAN (Admin / Mandor / Karyawan) ===== -->
@@ -229,9 +240,15 @@ async function logout() {
                 <div class="space-y-1 px-3 py-3">
                     <!-- Penandatangan: hanya SPL & LRLK -->
                     <template v-if="isPenandatangan">
-                        <ResponsiveNavLink :href="route('dokumen.index')" :active="route().current('dokumen.index')">📋 SPL &amp; LRLK</ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('dokumen.preview.spl')" :active="route().current('dokumen.preview.spl')">👁️ Preview SPL</ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('dokumen.preview.lrlk')" :active="route().current('dokumen.preview.lrlk')">👁️ Preview LRLK</ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('dokumen.index')" :active="route().current('dokumen.index')">SPL &amp; LRLK</ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('dokumen.preview.spl')" :active="route().current('dokumen.preview.spl')">Preview SPL</ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('dokumen.preview.lrlk')" :active="route().current('dokumen.preview.lrlk')">Preview LRLK</ResponsiveNavLink>
+                        <Link
+                            :href="route('dokumen.index', { tour: 'true' })"
+                            class="block rounded-lg px-3 py-2 text-base font-medium text-slate-600 hover:bg-slate-50"
+                        >
+                            Panduan
+                        </Link>
                     </template>
                     <!-- Operator lapangan -->
                     <template v-else>
@@ -246,7 +263,7 @@ async function logout() {
                             :href="route('dashboard', { tour: 'true' })"
                             class="block rounded-lg px-3 py-2 text-base font-medium text-slate-600 hover:bg-slate-50"
                         >
-                            Panduan 💡
+                            Panduan
                         </Link>
                     </template>
                 </div>
