@@ -1,7 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     items: Array,
@@ -15,6 +16,11 @@ const selectedTanggal = ref(props.tanggal);
 
 // Cetak SPL & LRLK hanya untuk admin
 const isAdmin = computed(() => usePage().props.auth?.user?.role === 'admin');
+const currentRole = computed(() => props.userRole || usePage().props.auth?.user?.role);
+
+onMounted(() => {
+    runTourIfRequested('lrlk', currentRole.value);
+});
 
 function filterTanggal() {
     router.get(route('lembur.lrlk'), { tanggal: selectedTanggal.value }, { preserveState: true });
@@ -56,7 +62,7 @@ function formatTanggalIndo(tgl) {
                 </div>
 
                 <div class="flex items-center gap-3 flex-wrap">
-                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <div id="tour-lrlk-filter" class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
                         <label class="text-xs font-semibold text-slate-600">Tanggal:</label>
                         <input
                             type="date"
@@ -75,6 +81,7 @@ function formatTanggalIndo(tgl) {
 
                     <template v-if="isAdmin">
                         <Link
+                            id="tour-lrlk-cetak"
                             :href="route('lembur.lrlk.print', { tanggal: selectedTanggal })"
                             class="bg-emerald-700 text-white px-4 py-2 rounded-xl hover:bg-emerald-800 text-xs font-bold transition shadow-sm shadow-emerald-700/20 flex items-center gap-1.5"
                         >
@@ -89,7 +96,7 @@ function formatTanggalIndo(tgl) {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
                 <!-- Ringkasan Statistik -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div id="tour-lrlk-stats" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
                         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl font-bold">
                             ⏱️
@@ -123,7 +130,7 @@ function formatTanggalIndo(tgl) {
 
 
                 <!-- Tabel LRLK -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div id="tour-lrlk-tabel" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                         <div>
                             <h3 class="font-bold text-slate-900 text-sm">

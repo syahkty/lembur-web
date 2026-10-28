@@ -1,7 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     lemburs: Array,
@@ -11,6 +12,10 @@ const props = defineProps({
     totalUpahLembur: Number,
     userProfile: Object,
     userRole: String,
+});
+
+onMounted(() => {
+    runTourIfRequested('riwayat', 'karyawan');
 });
 
 const selectedBulan = ref(props.bulan);
@@ -65,6 +70,7 @@ function formatTanggalIndo(tgl) {
                     <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm text-xs">
                         <label class="font-semibold text-slate-600">Pilih Bulan:</label>
                         <input
+                            id="tour-riwayat-bulan"
                             type="month"
                             v-model="selectedBulan"
                             @change="filterBulan"
@@ -146,7 +152,7 @@ function formatTanggalIndo(tgl) {
             </div>
 
             <!-- Ringkasan Statistik Bulan Ini -->
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div id="tour-riwayat-stats" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <!-- Total Rupiah Upah Lembur -->
                 <div class="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white p-5 rounded-2xl shadow-lg shadow-emerald-900/20 flex items-center gap-4">
                     <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl font-bold">
@@ -227,7 +233,7 @@ function formatTanggalIndo(tgl) {
             </div>
 
             <!-- Tabel Riwayat Lembur & Upah -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div id="tour-riwayat-tabel" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="p-4 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                     <div>
                         <h3 class="text-sm font-bold text-slate-900">

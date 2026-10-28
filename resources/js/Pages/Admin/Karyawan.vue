@@ -1,13 +1,18 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { confirmDialog } from '@/utils/swal';
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     karyawanList: Array,
     stasions: Array,
     mandors: Array,
+});
+
+onMounted(() => {
+    runTourIfRequested('akun', 'admin');
 });
 
 // Tab Aktif: 1 (Shift 1), 2 (Shift 2), 'none' (Belum ada shift), 'all' (Semua)
@@ -242,6 +247,7 @@ function roleBadgeClass(role) {
                     </p>
                 </div>
                 <button
+                    id="tour-akun-tambah"
                     @click="openCreate"
                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-xs font-bold transition shadow flex items-center gap-1.5 self-start sm:self-auto"
                 >
@@ -254,7 +260,7 @@ function roleBadgeClass(role) {
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
 
                 <!-- Navigation Tabs Shift -->
-                <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
+                <div id="tour-akun-tabs" class="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
                     <div class="flex flex-wrap gap-1.5">
                         <!-- Tab Shift 1 -->
                         <button
@@ -340,6 +346,7 @@ function roleBadgeClass(role) {
                     <!-- Search Box -->
                     <div class="w-full sm:w-64">
                         <input
+                            id="tour-akun-search"
                             type="text"
                             v-model="searchQuery"
                             placeholder="Cari nama, No. Employe, stasiun..."
@@ -377,7 +384,7 @@ function roleBadgeClass(role) {
                 </div>
 
                 <!-- Tabel Data Karyawan -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div id="tour-akun-tabel" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 text-xs">
                             <thead class="bg-gray-100 font-semibold text-gray-600 uppercase">

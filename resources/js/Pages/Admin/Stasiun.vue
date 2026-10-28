@@ -1,11 +1,16 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { confirmDialog } from '@/utils/swal';
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     stasions: Array,
+});
+
+onMounted(() => {
+    runTourIfRequested('stasiun', 'admin');
 });
 
 const showModal = ref(false);
@@ -63,7 +68,11 @@ async function hapus(id) {
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Kelola Stasiun Pabrik</h2>
-                <button @click="openCreate" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-semibold transition">
+                <button
+                    id="tour-stasiun-tambah"
+                    @click="openCreate"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-semibold transition"
+                >
                     + Tambah Stasiun
                 </button>
             </div>
@@ -71,7 +80,7 @@ async function hapus(id) {
 
         <div class="py-8">
             <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div id="tour-stasiun-tabel" class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 border">
                             <thead class="bg-gray-50">

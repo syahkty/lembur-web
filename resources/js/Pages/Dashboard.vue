@@ -4,8 +4,7 @@ import SignatureModal from '@/Components/SignatureModal.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import { confirmDialog } from '@/utils/swal';
-import { driver } from 'driver.js';
-import 'driver.js/dist/driver.css'; // Wajib agar efek gelapnya muncul
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     lemburs: Array,
@@ -17,67 +16,8 @@ const props = defineProps({
 const userRole = usePage().props.auth?.user?.role || props.userRole;
 
 onMounted(() => {
-    // Cek apakah ada '?tour=true' di URL
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('tour') === 'true') {
-        // Hilangkan '?tour=true' dari URL agar tidak jalan terus saat di-refresh
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Mulai Tour
-        mulaiPanduan();
-    }
+    runTourIfRequested('dashboard', userRole);
 });
-
-function mulaiPanduan() {
-    let langkahLangkah = [];
-
-    // Tentukan langkah berdasarkan role (jabatan)
-    if (userRole === 'admin') {
-        langkahLangkah = [
-            { popover: { title: 'Panduan Administrator', description: 'Panduan navigasi fitur dan kontrol pengelolaan data lembur pada sistem SILEKA.' } },
-            { element: '#tour-nav-lrlk', popover: { title: 'Menu LRLK (Realisasi)', description: 'Melihat ringkasan Laporan Realisasi Lembur Karyawan, durasi jam kerja riil, dan rincian upah lembur per bagian.', side: 'bottom' } },
-            { element: '#tour-nav-akun', popover: { title: 'Menu Kelola Akun', description: 'Mengelola data pengguna aplikasi, meliputi penambahan akun karyawan, mandor, admin, serta akun penandatangan dokumen.', side: 'bottom' } },
-            { element: '#tour-nav-stasiun', popover: { title: 'Menu Kelola Stasiun', description: 'Mengatur daftar master stasiun kerja dan unit operasional pabrik.', side: 'bottom' } },
-            { element: '#tour-nav-cetak', popover: { title: 'Menu Cetak Dokumen', description: 'Pusat pencetakan dokumen fisik resmi SPL dan form LRLK bulanan untuk pengarsipan.', side: 'bottom' } },
-            { element: '#tour-filter-tanggal', popover: { title: 'Filter Tanggal', description: 'Memilih tanggal untuk menampilkan data Surat Perintah Lembur (SPL) pada hari yang ditentukan.', side: 'bottom' } },
-            { element: '#tour-btn-lrlk', popover: { title: 'Pintas LRLK Harian', description: 'Membuka langsung realisasi lembur (LRLK) pada tanggal yang sedang aktif.', side: 'bottom' } },
-            { element: '#tour-cetak', popover: { title: 'Cetak SPL Hari Ini', description: 'Mencetak dokumen formulir Surat Perintah Lembur (PROS-HCM-02) sesuai tanggal yang dipilih lengkap dengan tanda tangan digital.', side: 'left' } },
-            { element: '#tour-rekap', popover: { title: 'Tabel Rekapitulasi SPL', description: 'Menampilkan seluruh instruksi lembur karyawan pada tanggal terpilih, rincian jam kerja, status persetujuan, tanda tangan digital, foto dokumentasi, serta opsi edit atau hapus.', side: 'top' } }
-        ];
-    } else if (userRole === 'mandor') {
-        langkahLangkah = [
-            { popover: { title: 'Panduan Mandor', description: 'Panduan penerbitan instruksi kerja lembur dan pemantauan status persetujuan anggota regu.' } },
-            { element: '#tour-filter-tanggal', popover: { title: 'Filter Tanggal', description: 'Memilih tanggal kerja untuk melihat riwayat atau jadwal lembur regu Anda.', side: 'bottom' } },
-            { element: '#tour-buat-spl', popover: { title: 'Buat SPL', description: 'Formulir untuk membuat instruksi lembur baru atau mencatat status kehadiran (Cuti/HK) anggota regu.', side: 'bottom' } },
-            { element: '#tour-rekap', popover: { title: 'Tabel Lembur Regu', description: 'Memantau persetujuan (ACC) dari karyawan, memeriksa tanda tangan, foto dokumentasi, serta merevisi instruksi yang ditolak.', side: 'top' } }
-        ];
-    } else {
-        langkahLangkah = [
-            { popover: { title: 'Panduan Karyawan', description: 'Panduan pemeriksaan instruksi lembur dan pemberian persetujuan digital.' } },
-            { element: '#tour-filter-tanggal', popover: { title: 'Filter Tanggal', description: 'Memilih tanggal kerja untuk memeriksa instruksi lembur yang ditujukan kepada Anda.', side: 'bottom' } },
-            { element: '#tour-tabel-spl', popover: { title: 'Tabel Instruksi & ACC Lembur', description: 'Memeriksa detail jam dan jenis pekerjaan lembur dari mandor. Klik tombol ACC & TTD untuk menyetujui dengan tanda tangan digital, atau Tolak jika instruksi tidak sesuai.', side: 'top' } }
-        ];
-    }
-
-    // Filter langkah yang elemennya ada dan tampak di layar (mendukung mode desktop maupun mobile)
-    const activeSteps = langkahLangkah.filter(step => {
-        if (!step.element) return true;
-        const el = document.querySelector(step.element);
-        return el && (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
-    });
-
-    // Jalankan Driver.js
-    const driverObj = driver({
-        showProgress: true,
-        animate: true,
-        nextBtnText: 'Lanjut ➔',
-        prevBtnText: '⬅ Kembali',
-        doneBtnText: 'Selesai',
-        steps: activeSteps
-    });
-
-    driverObj.drive();
-}
 
 const selectedTanggal = ref(props.tanggal);
 const showTolakModal = ref(false);

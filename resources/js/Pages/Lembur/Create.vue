@@ -1,14 +1,19 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { showConfirmDialog, showSuccessAlert, showErrorAlert } from '@/utils/swal';
+import { runTourIfRequested } from '@/utils/tour';
 
 const props = defineProps({
     karyawanList: Array,
     stasions: Array,
     userRole: String,
     userShift: Number,
+});
+
+onMounted(() => {
+    runTourIfRequested('create', 'mandor');
 });
 
 // Form Header
@@ -327,6 +332,7 @@ async function submit() {
                                 Tanggal SPL
                             </label>
                             <input
+                                id="tour-create-tgl"
                                 type="date"
                                 v-model="tanggal"
                                 class="w-full rounded-xl border-slate-300 shadow-sm text-sm font-medium focus:border-emerald-600 focus:ring-emerald-600"
@@ -795,7 +801,7 @@ async function submit() {
                             </div>
                         </div>
 
-                        <div class="overflow-x-auto">
+                        <div id="tour-create-tabel" class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-slate-200 text-xs">
                                 <thead class="bg-slate-100 text-slate-700 uppercase font-bold text-[11px] tracking-wider">
                                     <tr>
@@ -955,7 +961,9 @@ async function submit() {
                                     class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition">
                                     Batal
                                 </a>
-                                <button type="submit"
+                                <button
+                                    id="tour-create-simpan"
+                                    type="submit"
                                     class="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
                                     :disabled="isSubmitting">
                                     <span v-if="isSubmitting">Menyimpan...</span>

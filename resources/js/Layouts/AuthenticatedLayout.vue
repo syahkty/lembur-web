@@ -124,6 +124,7 @@ async function logout() {
                                 </NavLink>
 
                                 <NavLink
+                                    id="tour-nav-riwayat"
                                     v-if="userRole === 'karyawan'"
                                     :href="route('lembur.riwayat')"
                                     :active="route().current('lembur.riwayat')"
