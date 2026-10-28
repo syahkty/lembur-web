@@ -13,10 +13,10 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
-// Panduan SOP & Alur Kerja
+// Panduan SOP & Alur Kerja (Versi Vue Interaktif)
 Route::get('/panduan', function () {
-    return response()->file(public_path('panduan.html'));
-})->name('panduan');
+    return Inertia\Inertia::render('Panduan');
+})->middleware(['auth', 'verified'])->name('panduan');
 
 // Dashboard — semua role yang sudah login
 Route::get('/dashboard', [LemburController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');

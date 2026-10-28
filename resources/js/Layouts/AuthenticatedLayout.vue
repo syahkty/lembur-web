@@ -106,6 +106,7 @@ async function logout() {
                                 </NavLink>
 
                                 <NavLink
+                                    id="tour-nav-lrlk"
                                     v-if="userRole !== 'karyawan'"
                                     :href="route('lembur.lrlk')"
                                     :active="route().current('lembur.lrlk') || route().current('lembur.lrlk.print')"
@@ -131,6 +132,7 @@ async function logout() {
                                 </NavLink>
 
                                 <NavLink
+                                    id="tour-nav-akun"
                                     v-if="userRole === 'admin'"
                                     :href="route('admin.akun')"
                                     :active="route().current('admin.akun')"
@@ -139,6 +141,7 @@ async function logout() {
                                 </NavLink>
 
                                 <NavLink
+                                    id="tour-nav-stasiun"
                                     v-if="userRole === 'admin'"
                                     :href="route('admin.stasiun')"
                                     :active="route().current('admin.stasiun')"
@@ -148,6 +151,7 @@ async function logout() {
 
                                 <!-- Cetak: khusus admin -->
                                 <NavLink
+                                    id="tour-nav-cetak"
                                     v-if="userRole === 'admin'"
                                     :href="route('lembur.print')"
                                     :active="route().current('lembur.print')"
@@ -155,14 +159,15 @@ async function logout() {
                                     Cetak
                                 </NavLink>
 
-                                <a
-                                    href="/panduan"
-                                    target="_blank"
+                                <Link
+                                    id="tour-nav-panduan"
+                                    :href="route('dashboard', { tour: 'true' })"
                                     class="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
                                 >
                                     Panduan
-                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                </a>
+                                    <!-- Saya ganti ikon panah luarnya dengan ikon tanda tanya/bantuan agar lebih sesuai -->
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </Link>
                             </template>
                         </div>
                     </div>
@@ -236,7 +241,12 @@ async function logout() {
                         <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.akun')" :active="route().current('admin.akun')">Kelola Akun</ResponsiveNavLink>
                         <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('admin.stasiun')" :active="route().current('admin.stasiun')">Kelola Stasiun</ResponsiveNavLink>
                         <ResponsiveNavLink v-if="userRole === 'admin'" :href="route('lembur.print')" :active="route().current('lembur.print')">Cetak</ResponsiveNavLink>
-                        <a href="/panduan" target="_blank" class="block rounded-lg px-3 py-2 text-base font-medium text-slate-600 hover:bg-slate-50">Panduan ↗</a>
+                        <Link
+                            :href="route('dashboard', { tour: 'true' })"
+                            class="block rounded-lg px-3 py-2 text-base font-medium text-slate-600 hover:bg-slate-50"
+                        >
+                            Panduan 💡
+                        </Link>
                     </template>
                 </div>
 

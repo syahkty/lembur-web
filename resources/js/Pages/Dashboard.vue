@@ -1,9 +1,11 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import SignatureModal from '@/Components/SignatureModal.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
 import { confirmDialog } from '@/utils/swal';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css'; // Wajib agar efek gelapnya muncul
 
 const props = defineProps({
     lemburs: Array,
@@ -11,6 +13,71 @@ const props = defineProps({
     userSavedSignature: String,
     tanggal: String,
 });
+
+const userRole = usePage().props.auth?.user?.role || props.userRole;
+
+onMounted(() => {
+    // Cek apakah ada '?tour=true' di URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tour') === 'true') {
+        // Hilangkan '?tour=true' dari URL agar tidak jalan terus saat di-refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Mulai Tour
+        mulaiPanduan();
+    }
+});
+
+function mulaiPanduan() {
+    let langkahLangkah = [];
+
+    // Tentukan langkah berdasarkan role (jabatan)
+    if (userRole === 'admin') {
+        langkahLangkah = [
+            { popover: { title: 'Panduan Administrator', description: 'Panduan navigasi fitur dan kontrol pengelolaan data lembur pada sistem SILEKA.' } },
+            { element: '#tour-nav-lrlk', popover: { title: 'Menu LRLK (Realisasi)', description: 'Melihat ringkasan Laporan Realisasi Lembur Karyawan, durasi jam kerja riil, dan rincian upah lembur per bagian.', side: 'bottom' } },
+            { element: '#tour-nav-akun', popover: { title: 'Menu Kelola Akun', description: 'Mengelola data pengguna aplikasi, meliputi penambahan akun karyawan, mandor, admin, serta akun penandatangan dokumen.', side: 'bottom' } },
+            { element: '#tour-nav-stasiun', popover: { title: 'Menu Kelola Stasiun', description: 'Mengatur daftar master stasiun kerja dan unit operasional pabrik.', side: 'bottom' } },
+            { element: '#tour-nav-cetak', popover: { title: 'Menu Cetak Dokumen', description: 'Pusat pencetakan dokumen fisik resmi SPL dan form LRLK bulanan untuk pengarsipan.', side: 'bottom' } },
+            { element: '#tour-filter-tanggal', popover: { title: 'Filter Tanggal', description: 'Memilih tanggal untuk menampilkan data Surat Perintah Lembur (SPL) pada hari yang ditentukan.', side: 'bottom' } },
+            { element: '#tour-btn-lrlk', popover: { title: 'Pintas LRLK Harian', description: 'Membuka langsung realisasi lembur (LRLK) pada tanggal yang sedang aktif.', side: 'bottom' } },
+            { element: '#tour-cetak', popover: { title: 'Cetak SPL Hari Ini', description: 'Mencetak dokumen formulir Surat Perintah Lembur (PROS-HCM-02) sesuai tanggal yang dipilih lengkap dengan tanda tangan digital.', side: 'left' } },
+            { element: '#tour-rekap', popover: { title: 'Tabel Rekapitulasi SPL', description: 'Menampilkan seluruh instruksi lembur karyawan pada tanggal terpilih, rincian jam kerja, status persetujuan, tanda tangan digital, foto dokumentasi, serta opsi edit atau hapus.', side: 'top' } }
+        ];
+    } else if (userRole === 'mandor') {
+        langkahLangkah = [
+            { popover: { title: 'Panduan Mandor', description: 'Panduan penerbitan instruksi kerja lembur dan pemantauan status persetujuan anggota regu.' } },
+            { element: '#tour-filter-tanggal', popover: { title: 'Filter Tanggal', description: 'Memilih tanggal kerja untuk melihat riwayat atau jadwal lembur regu Anda.', side: 'bottom' } },
+            { element: '#tour-buat-spl', popover: { title: 'Buat SPL', description: 'Formulir untuk membuat instruksi lembur baru atau mencatat status kehadiran (Cuti/HK) anggota regu.', side: 'bottom' } },
+            { element: '#tour-rekap', popover: { title: 'Tabel Lembur Regu', description: 'Memantau persetujuan (ACC) dari karyawan, memeriksa tanda tangan, foto dokumentasi, serta merevisi instruksi yang ditolak.', side: 'top' } }
+        ];
+    } else {
+        langkahLangkah = [
+            { popover: { title: 'Panduan Karyawan', description: 'Panduan pemeriksaan instruksi lembur dan pemberian persetujuan digital.' } },
+            { element: '#tour-filter-tanggal', popover: { title: 'Filter Tanggal', description: 'Memilih tanggal kerja untuk memeriksa instruksi lembur yang ditujukan kepada Anda.', side: 'bottom' } },
+            { element: '#tour-tabel-spl', popover: { title: 'Tabel Instruksi & ACC Lembur', description: 'Memeriksa detail jam dan jenis pekerjaan lembur dari mandor. Klik tombol ACC & TTD untuk menyetujui dengan tanda tangan digital, atau Tolak jika instruksi tidak sesuai.', side: 'top' } }
+        ];
+    }
+
+    // Filter langkah yang elemennya ada dan tampak di layar (mendukung mode desktop maupun mobile)
+    const activeSteps = langkahLangkah.filter(step => {
+        if (!step.element) return true;
+        const el = document.querySelector(step.element);
+        return el && (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
+    });
+
+    // Jalankan Driver.js
+    const driverObj = driver({
+        showProgress: true,
+        animate: true,
+        nextBtnText: 'Lanjut ➔',
+        prevBtnText: '⬅ Kembali',
+        doneBtnText: 'Selesai',
+        steps: activeSteps
+    });
+
+    driverObj.drive();
+}
 
 const selectedTanggal = ref(props.tanggal);
 const showTolakModal = ref(false);
@@ -112,7 +179,7 @@ function formatTanggalIndo(tgl) {
                 </div>
 
                 <div class="flex items-center gap-2.5 flex-wrap">
-                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <div id="tour-filter-tanggal" class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
                         <label class="text-xs font-semibold text-slate-600">Tanggal:</label>
                         <input
                             type="date"
@@ -123,6 +190,7 @@ function formatTanggalIndo(tgl) {
                     </div>
 
                     <Link
+                        id="tour-buat-spl"
                         v-if="userRole === 'mandor'"
                         :href="route('lembur.create')"
                         class="bg-emerald-700 text-white px-4 py-2 rounded-xl hover:bg-emerald-800 text-xs font-bold transition shadow-sm shadow-emerald-700/20 flex items-center gap-1.5"
@@ -131,6 +199,7 @@ function formatTanggalIndo(tgl) {
                     </Link>
 
                     <Link
+                        id="tour-btn-lrlk"
                         v-if="userRole !== 'karyawan'"
                         :href="route('lembur.lrlk', { tanggal: selectedTanggal })"
                         class="bg-white text-slate-700 border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 text-xs font-semibold transition shadow-sm flex items-center gap-1.5"
@@ -139,6 +208,7 @@ function formatTanggalIndo(tgl) {
                     </Link>
 
                     <Link
+                        id="tour-cetak"
                         v-if="userRole === 'admin'"
                         :href="route('lembur.print', { tanggal: selectedTanggal })"
                         class="bg-emerald-700 text-white px-4 py-2 rounded-xl hover:bg-emerald-800 text-xs font-bold transition shadow-sm shadow-emerald-700/20 flex items-center gap-1.5"
@@ -153,7 +223,7 @@ function formatTanggalIndo(tgl) {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
                 <!-- Header Card Data -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div id="tour-rekap" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-4 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                         <div>
                             <h3 class="text-sm font-bold text-slate-900">
@@ -173,8 +243,10 @@ function formatTanggalIndo(tgl) {
                         </div>
                     </div>
 
-                    <!-- Tampilan Tabel (Desktop & Tablet) -->
-                    <div class="hidden sm:block overflow-x-auto">
+                    <!-- Area Tabel Lembur -->
+                    <div id="tour-tabel-spl">
+                        <!-- Tampilan Tabel (Desktop & Tablet) -->
+                        <div class="hidden sm:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-100 text-xs">
                             <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[11px] tracking-wider">
                                 <tr>
@@ -481,6 +553,7 @@ function formatTanggalIndo(tgl) {
                             Belum ada SPL untuk tanggal ini.
                         </div>
                     </div>
+                </div>
                 </div>
 
             </div>
