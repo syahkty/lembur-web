@@ -13,9 +13,13 @@ Route::get('/', function () {
         : redirect()->route('login');
 });
 
-// Panduan SOP & Alur Kerja (Versi Vue Interaktif)
+// Panduan SOP & Alur Kerja -> Otomatis alihkan ke Tur Interaktif Aplikasi
 Route::get('/panduan', function () {
-    return Inertia\Inertia::render('Panduan');
+    $user = auth()->user();
+    if ($user && in_array($user->role, ['asisten', 'askep', 'ktu', 'administratur', 'hrga'])) {
+        return redirect()->route('dokumen.index', ['tour' => 'true']);
+    }
+    return redirect()->route('dashboard', ['tour' => 'true']);
 })->middleware(['auth', 'verified'])->name('panduan');
 
 // Dashboard — semua role yang sudah login

@@ -1,13 +1,19 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, usePage, router } from '@inertiajs/vue3';
+import { computed, onMounted } from 'vue';
 
 const user = usePage().props.auth.user;
 const role = computed(() => user.role);
 
 const signerRoles = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
 const isSigner = computed(() => signerRoles.includes(role.value));
+
+onMounted(() => {
+    // Alihkan langsung ke tur panduan interaktif
+    const target = isSigner.value ? route('dokumen.index', { tour: 'true' }) : route('dashboard', { tour: 'true' });
+    router.visit(target);
+});
 </script>
 
 <template>
