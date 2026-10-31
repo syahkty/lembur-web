@@ -507,7 +507,7 @@ class LemburController extends Controller
             'lemburs'       => $query->orderBy('id')->get(),
             'tanggal'       => $tanggal,
             'userRole'      => $user->role,
-            'docSignatures' => $this->getDocSignatures($tanggal),
+            'docSignatures' => $this->getDocSignatures($tanggal, 'spl'),
         ]);
     }
 
@@ -638,14 +638,15 @@ class LemburController extends Controller
             'totalJamDibayar' => $totalJamDibayar,
             'totalUpahLembur' => 0,
             'userRole'       => $user->role,
-            'docSignatures'  => $this->getDocSignatures($tanggal),
+            'docSignatures'  => $this->getDocSignatures($tanggal, 'lrlk'),
         ]);
     }
 
     /**
-     * Ambil tanda tangan digital para penandatangan dokumen untuk tanggal tertentu
+     * Ambil tanda tangan digital para penandatangan dokumen untuk tanggal & jenis dokumen tertentu ('spl' atau 'lrlk').
+     * TIDAK fallback ke tanda tangan permanen agar setiap hari & dokumen wajib disetujui terlebih dahulu.
      */
-    private function getDocSignatures(string $tanggal): array
+    private function getDocSignatures(string $tanggal, string $jenisDokumen): array
     {
         $roles = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
         $jabatanMap = [
@@ -661,15 +662,11 @@ class LemburController extends Controller
             $userWithRole = User::where('role', $role)->first();
             if (!$userWithRole) continue;
 
-            // Cari TTD untuk tanggal ini, fallback ke permanen
+            // Cari TTD khusus untuk tanggal & jenis dokumen ini saja (tanpa fallback permanen)
             $sig = DocumentSignature::where('user_id', $userWithRole->id)
-                ->where('tanggal', $tanggal)
-                ->whereNull('jenis_dokumen')
-                ->first()
-                ?? DocumentSignature::where('user_id', $userWithRole->id)
-                    ->whereNull('tanggal')
-                    ->whereNull('jenis_dokumen')
-                    ->first();
+                ->whereDate('tanggal', $tanggal)
+                ->where('jenis_dokumen', $jenisDokumen)
+                ->first();
 
             $result[$role] = [
                 'nama'         => $userWithRole->name,

@@ -78,6 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:asisten,askep,ktu,administratur,hrga')->group(function () {
         Route::get('/dokumen', [DokumenController::class, 'index'])->name('dokumen.index');
         Route::post('/dokumen/tanda-tangan', [DokumenController::class, 'simpanTandaTangan'])->name('dokumen.ttd');
+        Route::delete('/dokumen/tanda-tangan', [DokumenController::class, 'batalTandaTangan'])->name('dokumen.ttd.batal');
         // Preview bentuk cetak (read-only, tanpa opsi cetak)
         Route::get('/dokumen/preview/spl', [DokumenController::class, 'printSpl'])->name('dokumen.preview.spl');
         Route::get('/dokumen/preview/lrlk', [DokumenController::class, 'printLrlk'])->name('dokumen.preview.lrlk');

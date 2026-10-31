@@ -92,27 +92,36 @@ class DokumenController extends Controller
             ];
         });
 
-        // Ambil tanda tangan yang sudah tersimpan untuk user ini
-        $savedSignature = $this->getSavedSignature($user->id, $tanggal);
+        // Ambil master tanda tangan tersimpan di akun user (sebagai template agar tidak perlu gambar ulang)
+        $savedSignature = $this->getMasterSignature($user->id);
 
-        // Ambil semua tanda tangan penandatangan untuk dokumen ini
-        $docSignatures = $this->getAllDocSignatures($tanggal);
+        // Ambil tanda tangan harian user ini khusus untuk tanggal terpilih (terpisah SPL & LRLK)
+        $mySplSignature = $this->getDailySignature($user->id, $tanggal, 'spl');
+        $myLrlkSignature = $this->getDailySignature($user->id, $tanggal, 'lrlk');
+
+        // Ambil semua tanda tangan penandatangan untuk dokumen SPL & LRLK pada tanggal ini
+        $docSignaturesSpl = $this->getAllDocSignatures($tanggal, 'spl');
+        $docSignaturesLrlk = $this->getAllDocSignatures($tanggal, 'lrlk');
 
         return Inertia::render('Dokumen/Index', [
-            'lemburs'        => $lemburs,
-            'lrlkItems'      => $lrlkItems,
-            'tanggal'        => $tanggal,
-            'totalJamDibayar' => $totalJamDibayar,
-            'userRole'       => $user->role,
-            'userName'       => $user->name,
-            'userJabatan'    => self::JABATAN_MAP[$user->role] ?? $user->role,
-            'savedSignature' => $savedSignature,
-            'docSignatures'  => $docSignatures,
+            'lemburs'           => $lemburs,
+            'lrlkItems'         => $lrlkItems,
+            'tanggal'           => $tanggal,
+            'totalJamDibayar'   => $totalJamDibayar,
+            'userRole'          => $user->role,
+            'userName'          => $user->name,
+            'userJabatan'       => self::JABATAN_MAP[$user->role] ?? $user->role,
+            'savedSignature'    => $savedSignature,
+            'mySplSignature'    => $mySplSignature,
+            'myLrlkSignature'   => $myLrlkSignature,
+            'docSignaturesSpl'  => $docSignaturesSpl,
+            'docSignaturesLrlk' => $docSignaturesLrlk,
+            'docSignatures'     => $docSignaturesSpl,
         ]);
     }
 
     /**
-     * Simpan tanda tangan digital penandatangan
+     * Simpan tanda tangan digital penandatangan untuk tanggal & jenis dokumen tertentu (spl / lrlk)
      */
     public function simpanTandaTangan(Request $request)
     {
@@ -121,27 +130,30 @@ class DokumenController extends Controller
         $user = auth()->user();
 
         $request->validate([
-            'tanda_tangan'   => 'required|string|max:2000000',
-            'tanggal'        => 'required|date',
+            'tanda_tangan'    => 'required|string|max:2000000',
+            'tanggal'         => 'required|date',
+            'jenis_dokumen'   => 'required|in:spl,lrlk',
             'simpan_permanen' => 'nullable|boolean',
         ]);
 
         $tanggal = $request->tanggal;
+        $jenisDokumen = $request->jenis_dokumen;
         $ttdData = $request->tanda_tangan;
 
-        // Simpan/update TTD untuk tanggal ini
+        // Simpan/update TTD khusus untuk tanggal & jenis dokumen ini ('spl' atau 'lrlk')
         DocumentSignature::updateOrCreate(
             [
                 'user_id'       => $user->id,
                 'tanggal'       => $tanggal,
-                'jenis_dokumen' => null,
+                'jenis_dokumen' => $jenisDokumen,
             ],
             [
                 'tanda_tangan' => $ttdData,
             ]
         );
 
-        // Jika simpan permanen, juga simpan tanpa tanggal (sebagai default)
+        // Jika simpan permanen dicentang, simpan sebagai master template (tanggal = null)
+        // agar ke depannya cukup 1x klik saat menyetujui SPL/LRLK hari berikutnya tanpa menggambar ulang
         if ($request->boolean('simpan_permanen')) {
             DocumentSignature::updateOrCreate(
                 [
@@ -153,38 +165,73 @@ class DokumenController extends Controller
                     'tanda_tangan' => $ttdData,
                 ]
             );
+            $user->update(['tanda_tangan' => $ttdData]);
         }
 
-        return redirect()->back()->with('success', 'Tanda tangan berhasil disimpan.');
+        $labelDok = strtoupper($jenisDokumen);
+        return redirect()->back()->with('success', "Dokumen {$labelDok} tanggal {$tanggal} berhasil disetujui & ditandatangani.");
     }
 
     /**
-     * Ambil tanda tangan tersimpan user untuk tanggal tertentu
+     * Batalkan persetujuan / tanda tangan pada tanggal & jenis dokumen tertentu
      */
-    private function getSavedSignature(int $userId, string $tanggal): ?string
+    public function batalTandaTangan(Request $request)
     {
-        // Coba cari TTD untuk tanggal ini dulu
-        $sig = DocumentSignature::where('user_id', $userId)
-            ->where('tanggal', $tanggal)
-            ->whereNull('jenis_dokumen')
-            ->first();
+        $this->checkAccess();
 
-        if ($sig) return $sig->tanda_tangan;
+        $user = auth()->user();
 
-        // Fallback ke TTD permanen
+        $request->validate([
+            'tanggal'       => 'required|date',
+            'jenis_dokumen' => 'required|in:spl,lrlk',
+        ]);
+
+        DocumentSignature::where('user_id', $user->id)
+            ->whereDate('tanggal', $request->tanggal)
+            ->where('jenis_dokumen', $request->jenis_dokumen)
+            ->delete();
+
+        $labelDok = strtoupper($request->jenis_dokumen);
+        return redirect()->back()->with('success', "Tanda tangan {$labelDok} untuk tanggal {$request->tanggal} berhasil dibatalkan.");
+    }
+
+    /**
+     * Ambil master tanda tangan tersimpan di akun user (hanya untuk template di modal)
+     */
+    private function getMasterSignature(int $userId): ?string
+    {
         $permanen = DocumentSignature::where('user_id', $userId)
             ->whereNull('tanggal')
             ->whereNull('jenis_dokumen')
+            ->latest()
             ->first();
 
-        return $permanen?->tanda_tangan;
+        if ($permanen) {
+            return $permanen->tanda_tangan;
+        }
+
+        return \App\Models\User::find($userId)?->tanda_tangan;
     }
 
     /**
-     * Ambil semua tanda tangan penandatangan untuk dokumen pada tanggal tertentu
+     * Ambil tanda tangan harian user khusus untuk tanggal & jenis dokumen ('spl' atau 'lrlk').
+     * TIDAK fallback ke tanda tangan permanen agar setiap hari & setiap dokumen wajib disetujui manual.
+     */
+    private function getDailySignature(int $userId, string $tanggal, string $jenisDokumen): ?string
+    {
+        $sig = DocumentSignature::where('user_id', $userId)
+            ->whereDate('tanggal', $tanggal)
+            ->where('jenis_dokumen', $jenisDokumen)
+            ->first();
+
+        return $sig?->tanda_tangan;
+    }
+
+    /**
+     * Ambil semua tanda tangan penandatangan untuk dokumen ('spl' atau 'lrlk') pada tanggal tertentu
      * Digunakan untuk tampilan di Print.vue & PrintLrlk.vue
      */
-    private function getAllDocSignatures(string $tanggal): array
+    private function getAllDocSignatures(string $tanggal, string $jenisDokumen): array
     {
         $result = [];
 
@@ -193,8 +240,8 @@ class DokumenController extends Controller
             $userWithRole = \App\Models\User::where('role', $role)->first();
             if (!$userWithRole) continue;
 
-            // Cari TTD-nya
-            $ttd = $this->getSavedSignature($userWithRole->id, $tanggal);
+            // Cari TTD khusus untuk tanggal & jenis dokumen ini saja (tanpa fallback permanen)
+            $ttd = $this->getDailySignature($userWithRole->id, $tanggal, $jenisDokumen);
 
             $result[$role] = [
                 'nama'         => $userWithRole->name,
@@ -207,7 +254,7 @@ class DokumenController extends Controller
     }
 
     /**
-     * Halaman print SPL khusus penandatangan (dengan tanda tangan mereka)
+     * Halaman print SPL khusus penandatangan (dengan tanda tangan SPL tanggal tersebut)
      */
     public function printSpl(Request $request)
     {
@@ -221,7 +268,7 @@ class DokumenController extends Controller
             ->orderBy('id')
             ->get();
 
-        $docSignatures = $this->getAllDocSignatures($tanggal);
+        $docSignatures = $this->getAllDocSignatures($tanggal, 'spl');
 
         return Inertia::render('Lembur/Print', [
             'lemburs'        => $lemburs,
@@ -277,7 +324,7 @@ class DokumenController extends Controller
             ];
         });
 
-        $docSignatures = $this->getAllDocSignatures($tanggal);
+        $docSignatures = $this->getAllDocSignatures($tanggal, 'lrlk');
 
         return Inertia::render('Lembur/PrintLrlk', [
             'items'          => $items,

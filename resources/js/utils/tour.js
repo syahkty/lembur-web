@@ -409,16 +409,16 @@ export function getTourSteps(page, role) {
                     {
                         element: '#tour-dokumen-ttd-btn',
                         popover: {
-                            title: 'Tombol Tanda Tangan',
-                            description: 'Membuka canvas digital untuk membuat atau memperbarui tanda tangan digital Anda.',
+                            title: 'Tombol Setujui & TTD (SPL & LRLK)',
+                            description: 'Menyetujui dan membubuhkan tanda tangan digital secara terpisah untuk dokumen SPL dan LRLK pada tanggal terpilih.',
                             side: 'bottom'
                         }
                     },
                     {
                         element: '#tour-dokumen-status-ttd',
                         popover: {
-                            title: 'Status Tanda Tangan Aktif',
-                            description: 'Menampilkan pratinjau tanda tangan digital Anda yang otomatis terpasang pada lembar cetak fisik SPL & LRLK.',
+                            title: 'Status Pengesahan Harian SPL & LRLK',
+                            description: 'Menampilkan status apakah SPL dan LRLK pada tanggal ini sudah Anda setujui. Setiap tanggal dan dokumen wajib disetujui masing-masing.',
                             side: 'bottom'
                         }
                     },

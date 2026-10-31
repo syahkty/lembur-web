@@ -1,17 +1,28 @@
 <script setup>
-import { ref, nextTick, watch } from 'vue';
+import { ref, computed, nextTick, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { alertError, showSuccessAlert } from '@/utils/swal';
 
 const props = defineProps({
     show: Boolean,
     tanggal: String,
+    jenisDokumen: {
+        type: String,
+        default: 'spl', // 'spl' | 'lrlk'
+    },
     savedSignature: String,
     userName: String,
     userJabatan: String,
 });
 
 const emit = defineEmits(['close', 'saved']);
+
+const kodeDokumen = computed(() => (props.jenisDokumen || 'spl').toUpperCase());
+const labelDokumen = computed(() =>
+    props.jenisDokumen === 'lrlk'
+        ? 'LRLK (Laporan Realisasi Kerja Lembur)'
+        : 'SPL (Surat Perintah Kerja Lembur)'
+);
 
 const canvasRef = ref(null);
 const isDrawing = ref(false);
@@ -115,13 +126,18 @@ function submitSignature() {
     router.post(route('dokumen.ttd'), {
         tanda_tangan: signatureData,
         tanggal: props.tanggal,
+        jenis_dokumen: props.jenisDokumen,
         simpan_permanen: simpanPermanen.value,
     }, {
+        preserveScroll: true,
         onSuccess: () => {
             isSubmitting.value = false;
-            emit('saved', signatureData);
+            emit('saved', { jenisDokumen: props.jenisDokumen, signatureData });
             emit('close');
-            showSuccessAlert('Tanda Tangan Tersimpan', 'Tanda tangan Anda akan muncul di dokumen cetak.');
+            showSuccessAlert(
+                `Dokumen ${kodeDokumen.value} Disetujui`,
+                `Tanda tangan Anda berhasil dibubuhkan khusus untuk dokumen ${kodeDokumen.value} tanggal ${props.tanggal}.`
+            );
         },
         onError: () => {
             isSubmitting.value = false;
@@ -140,10 +156,10 @@ function submitSignature() {
                     <span class="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center text-lg">✍️</span>
                     <div>
                         <h3 class="font-extrabold text-base text-slate-900 leading-tight">
-                            Tanda Tangan Digital Dokumen
+                            Persetujuan &amp; TTD {{ kodeDokumen }}
                         </h3>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            {{ userName }} · {{ userJabatan }} · {{ tanggal }}
+                            {{ userName }} · {{ userJabatan }} · Tanggal {{ tanggal }}
                         </p>
                     </div>
                 </div>
@@ -159,11 +175,12 @@ function submitSignature() {
                 <!-- Info Box -->
                 <div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-3.5">
                     <div class="font-bold text-blue-950 text-xs mb-1">
-                        📋 Persetujuan Dokumen Lembur
+                        📋 Pengesahan Harian — {{ labelDokumen }}
                     </div>
-                    <p class="text-[11px] text-blue-800">
-                        Tanda tangan ini akan ditampilkan di kolom <strong>{{ userJabatan }}</strong>
-                        pada dokumen SPL dan LRLK untuk tanggal <strong>{{ tanggal }}</strong>.
+                    <p class="text-[11px] text-blue-800 leading-relaxed">
+                        Tanda tangan ini hanya berlaku khusus untuk dokumen <strong>{{ kodeDokumen }}</strong>
+                        pada tanggal <strong>{{ tanggal }}</strong> di kolom <strong>{{ userJabatan }}</strong>.
+                        Dokumen lain ({{ kodeDokumen === 'SPL' ? 'LRLK' : 'SPL' }}) maupun tanggal berikutnya tetap wajib Anda setujui secara terpisah.
                     </p>
                 </div>
 
@@ -179,7 +196,7 @@ function submitSignature() {
                             @click="useSaved = true"
                             class="text-[11px] font-bold text-blue-700 hover:underline"
                         >
-                            ← Pakai TTD Tersimpan
+                            ← Pakai Master TTD Tersimpan
                         </button>
                     </div>
 
@@ -187,7 +204,7 @@ function submitSignature() {
                     <div v-if="useSaved && savedSignature" class="bg-slate-50 border-2 border-blue-500 rounded-2xl p-4 text-center">
                         <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-200">
                             <span class="text-xs font-bold text-blue-900 flex items-center gap-1">
-                                <span>✓</span> Tanda Tangan Tersimpan Terpilih
+                                <span>✓</span> Master Tanda Tangan Tersimpan Siap Digunakan
                             </span>
                             <button
                                 type="button"
@@ -201,7 +218,7 @@ function submitSignature() {
                             <img :src="savedSignature" alt="TTD Tersimpan" class="max-h-full object-contain" />
                         </div>
                         <p class="text-[11px] text-slate-500 mt-2">
-                            Tanda tangan ini akan ditampilkan di dokumen cetak.
+                            Klik tombol <strong>Setujui &amp; TTD {{ kodeDokumen }}</strong> di bawah untuk membubuhkan tanda tangan ini pada dokumen <strong>{{ kodeDokumen }}</strong> tanggal <strong>{{ tanggal }}</strong>.
                         </p>
                     </div>
 
@@ -245,7 +262,7 @@ function submitSignature() {
                                 class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 mt-0.5 cursor-pointer"
                             />
                             <label for="chkSimpanPermanen" class="text-[11px] text-slate-700 cursor-pointer font-medium leading-snug">
-                                <strong>Simpan sebagai tanda tangan default</strong> — tidak perlu coret lagi untuk dokumen berikutnya.
+                                <strong>Simpan sebagai master tanda tangan di akun</strong> — agar saat menyetujui SPL/LRLK berikutnya cukup 1x klik tanpa perlu mencoret ulang.
                             </label>
                         </div>
                     </div>
@@ -270,7 +287,7 @@ function submitSignature() {
                     :disabled="isSubmitting"
                 >
                     <span v-if="isSubmitting">Menyimpan...</span>
-                    <span v-else>✓ Simpan Tanda Tangan</span>
+                    <span v-else>✓ Setujui &amp; TTD {{ kodeDokumen }}</span>
                 </button>
             </div>
 
