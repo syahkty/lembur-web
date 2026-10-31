@@ -26,12 +26,18 @@ class DokumenController extends Controller
      * Mapping jabatan untuk tampilan dokumen cetak
      */
     public const JABATAN_MAP = [
-        'asisten'     => 'Asisten',
-        'askep'       => 'Asisten Kepala',
-        'ktu'         => 'KTU',
+        'asisten'       => 'Asisten',
+        'askep'         => 'Asisten Kepala',
+        'ktu'           => 'KTU',
         'administratur' => 'Administratur',
-        'hrga'        => 'Staff HRGA',
+        'hrga'          => 'Kabag HRGA',
     ];
+
+    /**
+     * Role yang menandatangani masing-masing kertas dokumen
+     */
+    public const SPL_ROLES  = ['asisten', 'askep'];
+    public const LRLK_ROLES = ['hrga', 'ktu', 'administratur'];
 
     protected function checkAccess(): void
     {
@@ -137,7 +143,9 @@ class DokumenController extends Controller
         ]);
 
         $tanggal = $request->tanggal;
-        $jenisDokumen = $request->jenis_dokumen;
+        // Sesuaikan dokumen dengan wewenang jabatan penandatangan:
+        // Asisten & Askep -> SPL | Kabag HRGA, KTU, Administratur -> LRLK
+        $jenisDokumen = in_array($user->role, self::SPL_ROLES) ? 'spl' : 'lrlk';
         $ttdData = $request->tanda_tangan;
 
         // Simpan/update TTD khusus untuk tanggal & jenis dokumen ini ('spl' atau 'lrlk')
@@ -234,8 +242,9 @@ class DokumenController extends Controller
     private function getAllDocSignatures(string $tanggal, string $jenisDokumen): array
     {
         $result = [];
+        $targetRoles = $jenisDokumen === 'spl' ? self::SPL_ROLES : self::LRLK_ROLES;
 
-        foreach (self::ALLOWED_ROLES as $role) {
+        foreach ($targetRoles as $role) {
             // Cari user dengan role ini
             $userWithRole = \App\Models\User::where('role', $role)->first();
             if (!$userWithRole) continue;

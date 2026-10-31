@@ -311,19 +311,19 @@ const paddedItems = computed(() => {
                                     {{ docSignatures?.ktu?.jabatan || jabatanDiketahui }}
                                 </div>
                             </td>
-                            <!-- Dibuat: Asisten (hanya TTD milik Asisten) -->
+                            <!-- Dibuat: Kabag HRGA (hanya TTD milik HRGA) -->
                             <td class="border border-black align-bottom pb-1 relative">
                                 <img
-                                    v-if="docSignatures?.asisten?.tanda_tangan"
-                                    :src="docSignatures.asisten.tanda_tangan"
-                                    alt="TTD Asisten"
+                                    v-if="docSignatures?.hrga?.tanda_tangan"
+                                    :src="docSignatures.hrga.tanda_tangan"
+                                    alt="TTD Kabag HRGA"
                                     class="absolute inset-0 max-h-10 max-w-full object-contain m-auto"
                                 />
                                 <div class="font-bold text-center w-full text-[9.5px]">
-                                    {{ docSignatures?.asisten?.nama || namaDibuat }}
+                                    {{ docSignatures?.hrga?.nama || namaDibuat }}
                                 </div>
                                 <div class="text-[8.5px] text-gray-700 leading-none mt-0.5">
-                                    {{ docSignatures?.asisten?.jabatan || jabatanDibuat }}
+                                    {{ docSignatures?.hrga?.jabatan || jabatanDibuat }}
                                 </div>
                             </td>
                         </tr>

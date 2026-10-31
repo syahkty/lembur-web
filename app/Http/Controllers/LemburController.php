@@ -648,13 +648,16 @@ class LemburController extends Controller
      */
     private function getDocSignatures(string $tanggal, string $jenisDokumen): array
     {
-        $roles = ['asisten', 'askep', 'ktu', 'administratur', 'hrga'];
+        $roles = $jenisDokumen === 'spl'
+            ? ['asisten', 'askep']
+            : ['hrga', 'ktu', 'administratur'];
+
         $jabatanMap = [
             'asisten'       => 'Asisten',
             'askep'         => 'Asisten Kepala',
             'ktu'           => 'KTU',
             'administratur' => 'Administratur',
-            'hrga'          => 'Staff HRGA',
+            'hrga'          => 'Kabag HRGA',
         ];
 
         $result = [];

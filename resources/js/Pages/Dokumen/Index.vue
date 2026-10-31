@@ -26,17 +26,23 @@ onMounted(() => {
     runTourIfRequested('dokumen', props.userRole);
 });
 
+// Tentukan dokumen mana yang menjadi wewenang tanda tangan jabatan ini:
+// Asisten & Askep -> SPL | Kabag HRGA, KTU, Administratur -> LRLK
+const myDocType = computed(() => (['asisten', 'askep'].includes(props.userRole) ? 'spl' : 'lrlk'));
+const myDocLabel = computed(() => (myDocType.value === 'spl' ? 'SPL' : 'LRLK'));
+const myActiveSignature = computed(() => (myDocType.value === 'spl' ? props.mySplSignature : props.myLrlkSignature));
+
 const selectedTanggal = ref(props.tanggal);
-const activeTab = ref('spl'); // 'spl' | 'lrlk'
+const activeTab = ref(['asisten', 'askep'].includes(props.userRole) ? 'spl' : 'lrlk'); // default tab sesuai dokumen wewenangnya
 const showSignatureModal = ref(false);
-const modalJenisDokumen = ref('spl'); // 'spl' | 'lrlk'
+const modalJenisDokumen = ref(myDocType.value);
 
 function filterTanggal() {
     router.get(route('dokumen.index'), { tanggal: selectedTanggal.value }, { preserveState: true });
 }
 
-function openSignatureModal(jenis) {
-    modalJenisDokumen.value = jenis;
+function openSignatureModal(jenis = null) {
+    modalJenisDokumen.value = jenis || myDocType.value;
     showSignatureModal.value = true;
 }
 
@@ -140,29 +146,18 @@ const roleTheme = computed(() => ({
                         />
                     </div>
 
-                    <!-- Tombol Tanda Tangan SPL & LRLK Terpisah -->
+                    <!-- Tombol Tanda Tangan Sesuai Wewenang Kertas Jabatan (SPL untuk Asisten/Askep, LRLK untuk Kabag HRGA/KTU/Administratur) -->
                     <div id="tour-dokumen-ttd-btn" class="flex items-center gap-2">
                         <button
                             type="button"
-                            @click="openSignatureModal('spl')"
+                            @click="openSignatureModal(myDocType)"
                             :class="[
-                                mySplSignature ? 'bg-emerald-600 hover:bg-emerald-700' : roleTheme.bg,
-                                'text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 hover:opacity-90'
+                                myActiveSignature ? 'bg-emerald-600 hover:bg-emerald-700' : roleTheme.bg,
+                                'text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 hover:opacity-90'
                             ]"
                         >
-                            <span>{{ mySplSignature ? '✓' : '✍️' }}</span>
-                            {{ mySplSignature ? 'SPL Sudah TTD' : 'Setujui & TTD SPL' }}
-                        </button>
-                        <button
-                            type="button"
-                            @click="openSignatureModal('lrlk')"
-                            :class="[
-                                myLrlkSignature ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-800 hover:bg-slate-900',
-                                'text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5'
-                            ]"
-                        >
-                            <span>{{ myLrlkSignature ? '✓' : '✍️' }}</span>
-                            {{ myLrlkSignature ? 'LRLK Sudah TTD' : 'Setujui & TTD LRLK' }}
+                            <span>{{ myActiveSignature ? '✓' : '✍️' }}</span>
+                            {{ myActiveSignature ? `${myDocLabel} Tanggal Ini Sudah TTD` : `Setujui & TTD ${myDocLabel}` }}
                         </button>
                     </div>
                 </div>
@@ -172,110 +167,59 @@ const roleTheme = computed(() => ({
         <div class="py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
-                <!-- Status Persetujuan & Tanda Tangan Harian (Terpisah SPL & LRLK) -->
-                <div id="tour-dokumen-status-ttd" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                    <!-- Kartu Status SPL Tanggal Ini -->
+                <!-- Status Persetujuan & Tanda Tangan Harian Sesuai Kertas Wewenang Jabatan -->
+                <div id="tour-dokumen-status-ttd">
                     <div
                         :class="[
-                            'flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl border',
-                            mySplSignature ? 'bg-emerald-50/80 border-emerald-200' : 'bg-amber-50/80 border-amber-200'
+                            'flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3.5 rounded-2xl border',
+                            myActiveSignature ? 'bg-emerald-50/80 border-emerald-200' : 'bg-amber-50/80 border-amber-200'
                         ]"
                     >
                         <div class="flex items-center gap-3 min-w-0">
-                            <div v-if="mySplSignature" class="flex-shrink-0">
-                                <img :src="mySplSignature" alt="TTD SPL" class="h-10 w-16 object-contain bg-white border border-emerald-200 rounded-lg px-1.5 py-0.5" />
-                            </div>
-                            <div v-else class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                                SPL
-                            </div>
-                            <div class="min-w-0">
-                                <p :class="['text-xs font-extrabold truncate', mySplSignature ? 'text-emerald-800' : 'text-amber-900']">
-                                    {{ mySplSignature ? `✓ SPL ${formatTanggalIndo(tanggal)} Sudah Disetujui` : `SPL ${formatTanggalIndo(tanggal)} Belum Disetujui` }}
-                                </p>
-                                <p class="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                                    <template v-if="mySplSignature">
-                                        Tanda tangan Anda aktif pada cetakan <strong>SPL</strong> tanggal ini.
-                                    </template>
-                                    <template v-else>
-                                        Klik <strong>Setujui &amp; TTD SPL</strong> untuk mengesahkan SPL tanggal ini.
-                                    </template>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <button
-                                type="button"
-                                @click="openSignatureModal('spl')"
-                                :class="[
-                                    'px-3 py-1.5 rounded-xl text-[11px] font-bold transition shadow-sm',
-                                    mySplSignature
-                                        ? 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-                                        : 'bg-emerald-700 text-white hover:bg-emerald-800'
-                                ]"
-                            >
-                                {{ mySplSignature ? 'Ubah TTD' : '✍️ TTD SPL' }}
-                            </button>
-                            <button
-                                v-if="mySplSignature"
-                                type="button"
-                                @click="batalTandaTangan('spl')"
-                                class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition"
-                                title="Batalkan TTD SPL Tanggal Ini"
-                            >
-                                Batal
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Kartu Status LRLK Tanggal Ini -->
-                    <div
-                        :class="[
-                            'flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl border',
-                            myLrlkSignature ? 'bg-emerald-50/80 border-emerald-200' : 'bg-amber-50/80 border-amber-200'
-                        ]"
-                    >
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div v-if="myLrlkSignature" class="flex-shrink-0">
-                                <img :src="myLrlkSignature" alt="TTD LRLK" class="h-10 w-16 object-contain bg-white border border-emerald-200 rounded-lg px-1.5 py-0.5" />
+                            <div v-if="myActiveSignature" class="flex-shrink-0">
+                                <img :src="myActiveSignature" alt="TTD" class="h-10 w-16 object-contain bg-white border border-emerald-200 rounded-lg px-1.5 py-0.5" />
                             </div>
                             <div v-else class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                                LRLK
+                                {{ myDocLabel }}
                             </div>
                             <div class="min-w-0">
-                                <p :class="['text-xs font-extrabold truncate', myLrlkSignature ? 'text-emerald-800' : 'text-amber-900']">
-                                    {{ myLrlkSignature ? `✓ LRLK ${formatTanggalIndo(tanggal)} Sudah Disetujui` : `LRLK ${formatTanggalIndo(tanggal)} Belum Disetujui` }}
+                                <p :class="['text-xs font-extrabold', myActiveSignature ? 'text-emerald-800' : 'text-amber-900']">
+                                    {{ myActiveSignature
+                                        ? `✓ Dokumen ${myDocLabel} Tanggal ${formatTanggalIndo(tanggal)} Sudah Anda Setujui (${userJabatan})`
+                                        : `Dokumen ${myDocLabel} Tanggal ${formatTanggalIndo(tanggal)} Belum Anda Setujui (${userJabatan})`
+                                    }}
                                 </p>
                                 <p class="text-[11px] text-slate-600 mt-0.5 leading-snug">
-                                    <template v-if="myLrlkSignature">
-                                        Tanda tangan Anda aktif pada cetakan <strong>LRLK</strong> tanggal ini.
+                                    <template v-if="myActiveSignature">
+                                        Tanda tangan Anda sudah tertera di kolom <strong>{{ userJabatan }}</strong> pada kertas cetak <strong>{{ myDocLabel }}</strong> tanggal ini.
                                     </template>
                                     <template v-else>
-                                        Klik <strong>Setujui &amp; TTD LRLK</strong> untuk mengesahkan LRLK tanggal ini.
+                                        Jabatan <strong>{{ userJabatan }}</strong> bertugas mengesahkan kertas <strong>{{ myDocLabel }}</strong>. Klik tombol di samping untuk membubuhkan tanda tangan pada tanggal ini.
                                     </template>
                                 </p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="flex items-center gap-2 flex-shrink-0">
                             <button
                                 type="button"
-                                @click="openSignatureModal('lrlk')"
+                                @click="openSignatureModal(myDocType)"
                                 :class="[
-                                    'px-3 py-1.5 rounded-xl text-[11px] font-bold transition shadow-sm',
-                                    myLrlkSignature
+                                    'px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm',
+                                    myActiveSignature
                                         ? 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                                         : 'bg-emerald-700 text-white hover:bg-emerald-800'
                                 ]"
                             >
-                                {{ myLrlkSignature ? 'Ubah TTD' : '✍️ TTD LRLK' }}
+                                {{ myActiveSignature ? `Ubah TTD ${myDocLabel}` : `✍️ Setujui & TTD ${myDocLabel}` }}
                             </button>
                             <button
-                                v-if="myLrlkSignature"
+                                v-if="myActiveSignature"
                                 type="button"
-                                @click="batalTandaTangan('lrlk')"
-                                class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition"
-                                title="Batalkan TTD LRLK Tanggal Ini"
+                                @click="batalTandaTangan(myDocType)"
+                                class="px-3 py-1.5 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 transition"
+                                :title="`Batalkan TTD ${myDocLabel} Tanggal Ini`"
                             >
-                                Batal
+                                Batalkan TTD
                             </button>
                         </div>
                     </div>
@@ -292,12 +236,13 @@ const roleTheme = computed(() => ({
                     >
                         <span>SPL (Surat Perintah Lembur)</span>
                         <span
+                            v-if="myDocType === 'spl'"
                             :class="[
                                 'px-1.5 py-0.5 text-[10px] rounded-md font-extrabold',
                                 mySplSignature ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                             ]"
                         >
-                            {{ mySplSignature ? '✓ Sudah TTD' : 'Belum TTD' }}
+                            {{ mySplSignature ? '✓ Sudah Anda TTD' : 'Wajib Anda TTD' }}
                         </span>
                     </button>
                     <button
@@ -309,12 +254,13 @@ const roleTheme = computed(() => ({
                     >
                         <span>LRLK (Laporan Realisasi)</span>
                         <span
+                            v-if="myDocType === 'lrlk'"
                             :class="[
                                 'px-1.5 py-0.5 text-[10px] rounded-md font-extrabold',
                                 myLrlkSignature ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                             ]"
                         >
-                            {{ myLrlkSignature ? '✓ Sudah TTD' : 'Belum TTD' }}
+                            {{ myLrlkSignature ? '✓ Sudah Anda TTD' : 'Wajib Anda TTD' }}
                         </span>
                     </button>
                 </div>
@@ -524,7 +470,7 @@ const roleTheme = computed(() => ({
                             Menampilkan pengesahan khusus dokumen <strong>{{ activeTab.toUpperCase() }}</strong> pada tanggal terpilih
                         </span>
                     </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                    <div :class="activeTab === 'spl' ? 'grid grid-cols-2 max-w-md gap-3' : 'grid grid-cols-1 sm:grid-cols-3 max-w-2xl gap-3'">
                         <div
                             v-for="(sig, role) in (activeTab === 'spl' ? docSignaturesSpl : docSignaturesLrlk)"
                             :key="role"

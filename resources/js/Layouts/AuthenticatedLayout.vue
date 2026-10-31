@@ -21,7 +21,7 @@ const roleLabel = computed(() => ({
     askep: 'Asisten Kepala',
     ktu: 'KTU',
     administratur: 'Administratur',
-    hrga: 'Staff HRGA',
+    hrga: 'Kabag HRGA',
 }[userRole.value] ?? userRole.value));
 
 // Role penandatangan dokumen (bukan operator lapangan)

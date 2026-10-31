@@ -552,7 +552,7 @@ function roleBadgeClass(role) {
                                     <option value="askep">📌 Asisten Kepala (Askep)</option>
                                     <option value="ktu">🗂️ KTU</option>
                                     <option value="administratur">🏛️ Administratur</option>
-                                    <option value="hrga">👔 Staff HRGA</option>
+                                    <option value="hrga">👔 Kabag HRGA</option>
                                 </optgroup>
                             </select>
                         </div>
